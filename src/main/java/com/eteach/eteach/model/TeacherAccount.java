@@ -31,7 +31,7 @@ public class TeacherAccount implements Serializable {
     @Column(nullable = false, length = 100)
     private String twitter_link;
 
-    @OneToMany(mappedBy="teacher",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     private List<Course> courses;
 
     public TeacherAccount() { }

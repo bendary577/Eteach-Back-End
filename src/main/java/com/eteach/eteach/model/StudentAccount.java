@@ -5,7 +5,6 @@ import com.eteach.eteach.enums.Grade;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 

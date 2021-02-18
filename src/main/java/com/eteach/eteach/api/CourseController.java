@@ -23,8 +23,9 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @Value("${server.compression.mime-types}")
+    /*@Value("${server.compression.mime-types}")
     private List<String> contentVideos;
+    */
 
     @Autowired
     public CourseController(CourseService courseService){
@@ -37,6 +38,7 @@ public class CourseController {
         return "saved";
     }
 
+    /*
     @PostMapping(value= "/upload/{id}/trailer_video/", consumes = {
                                                     MediaType.MULTIPART_FORM_DATA_VALUE,
                                                     MediaType.APPLICATION_OCTET_STREAM_VALUE})
@@ -57,6 +59,7 @@ public class CourseController {
         this.courseService.createCourse(course);
         return "saved";
     }
+    */
 
     @GetMapping("/")
     public List<Course> getAllCourses() {
