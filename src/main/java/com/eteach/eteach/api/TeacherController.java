@@ -1,7 +1,7 @@
 package com.eteach.eteach.api;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.model.Teacher;
+import com.eteach.eteach.model.TeacherAccount;
 import com.eteach.eteach.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,37 +21,37 @@ public class TeacherController {
     }
 
     @PostMapping("/")
-    public String postTeacher(@Valid @RequestBody Teacher teacher){
-        this.teacherService.createTeacher(teacher);
+    public String postTeacher(@Valid @RequestBody TeacherAccount teacherAccount){
+        this.teacherService.createTeacher(teacherAccount);
         return "saved";
     }
 
     @GetMapping("/")
-    public List<Teacher> getAllTeachers() {
+    public List<TeacherAccount> getAllTeachers() {
         return teacherService.getAllTeachers();
     }
 
     @GetMapping("/{id}")
-    public Teacher getTeacher(@PathVariable(value = "id") Long id) {
+    public TeacherAccount getTeacher(@PathVariable(value = "id") Long id) {
         return teacherService.getTeacher(id);
     }
 
     @PutMapping("/{id}")
-    public Teacher updateTeacher(@PathVariable(value = "id") Long id, @Valid @RequestBody Teacher newTeacher) {
-        Teacher oldTeacher = teacherService.getTeacher(id);
-        if(oldTeacher == null){
+    public TeacherAccount updateTeacher(@PathVariable(value = "id") Long id, @Valid @RequestBody TeacherAccount newTeacherAccount) {
+        TeacherAccount oldTeacherAccount = teacherService.getTeacher(id);
+        if(oldTeacherAccount == null){
             throw new ResourceNotFoundException("Teacher", "id", id);
         }
-        return teacherService.updateTeacher(oldTeacher, newTeacher);
+        return teacherService.updateTeacher(oldTeacherAccount, newTeacherAccount);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTeacher(@PathVariable(value = "id") Long id) {
-        Teacher teacher = teacherService.getTeacher(id);
-        if(teacher == null){
+        TeacherAccount teacherAccount = teacherService.getTeacher(id);
+        if(teacherAccount == null){
             throw new ResourceNotFoundException("Teacher", "id", id);
         }
-        teacherService.deleteTeacher(teacher);
+        teacherService.deleteTeacher(teacherAccount);
         return ResponseEntity.ok().build();
     }
 

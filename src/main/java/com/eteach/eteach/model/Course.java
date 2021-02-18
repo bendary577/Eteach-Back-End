@@ -96,7 +96,7 @@ public class Course implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
-    private Teacher teacher;
+    private TeacherAccount teacherAccount;
 
     public Course() { }
 
@@ -135,12 +135,12 @@ public class Course implements Serializable {
         this.sections = sections;
     }
 
-    public Teacher getTeacher() {
-        return teacher;
+    public TeacherAccount getTeacher() {
+        return teacherAccount;
     }
 
-    public void setTeacher(Teacher teacher) {
-        this.teacher = teacher;
+    public void setTeacher(TeacherAccount teacherAccount) {
+        this.teacherAccount = teacherAccount;
     }
 
     public Long getId() {

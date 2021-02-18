@@ -1,7 +1,7 @@
 package com.eteach.eteach.api;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.model.Student;
+import com.eteach.eteach.model.StudentAccount;
 import com.eteach.eteach.service.StudentService;
 import com.eteach.eteach.utils.FileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,60 +27,60 @@ public class StudentController {
     }
 
     @PostMapping("/")
-    public String postStudent(@Valid @RequestBody Student student) {
-        this.studentService.createStudent(student);
+    public String postStudent(@Valid @RequestBody StudentAccount studentAccount) {
+        this.studentService.createStudent(studentAccount);
         return "saved";
     }
 
     @PostMapping("/upload/{id}/image/")
     public String uploadImage(@PathVariable(value = "id") Long id, @Valid @NotNull @NotEmpty @RequestParam("image") MultipartFile image) throws IOException {
-        Student student = studentService.getStudent(id);
-        if(student == null){
+        StudentAccount studentAccount = studentService.getStudent(id);
+        if(studentAccount == null){
             throw new ResourceNotFoundException("Student", "id", id);
         }
         String fileName = StringUtils.cleanPath(image.getOriginalFilename());
-        student.setImage(fileName);
-        String imageUploadDirectory = "user-photos/" + student.getId();
+        studentAccount.setImage(fileName);
+        String imageUploadDirectory = "user-photos/" + studentAccount.getId();
         FileUpload.saveFile(imageUploadDirectory, fileName, image);
-        this.studentService.createStudent(student);
+        this.studentService.createStudent(studentAccount);
         return "saved";
     }
 
     @GetMapping("/")
-    public List<Student> getAllStudents() {
-        List<Student> students;
-        students = studentService.getAllStudents();
-        if(students == null){
+    public List<StudentAccount> getAllStudents() {
+        List<StudentAccount> studentAccounts;
+        studentAccounts = studentService.getAllStudents();
+        if(studentAccounts == null){
             throw new ResourceNotFoundException("Student", "id", 001);
         }
-        return students;
+        return studentAccounts;
     }
 
     @GetMapping("/{id}")
-    public Student getStudent(@PathVariable(value = "id") Long id) {
-        Student student = studentService.getStudent(id);
-        if(student == null){
+    public StudentAccount getStudent(@PathVariable(value = "id") Long id) {
+        StudentAccount studentAccount = studentService.getStudent(id);
+        if(studentAccount == null){
             throw new ResourceNotFoundException("Student", "id", id);
         }
-        return student;
+        return studentAccount;
     }
 
     @PutMapping("/{id}")
-    public Student updateStudent(@PathVariable(value = "id") Long id, @Valid @RequestBody Student newStudent) {
-        Student oldStudent = studentService.getStudent(id);
-        if(oldStudent == null){
+    public StudentAccount updateStudent(@PathVariable(value = "id") Long id, @Valid @RequestBody StudentAccount newStudentAccount) {
+        StudentAccount oldStudentAccount = studentService.getStudent(id);
+        if(oldStudentAccount == null){
             throw new ResourceNotFoundException("Student", "id", id);
         }
-        return studentService.updateStudent(oldStudent, newStudent);
+        return studentService.updateStudent(oldStudentAccount, newStudentAccount);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteStudent(@PathVariable(value = "id") Long id) {
-        Student student = studentService.getStudent(id);
-        if(student == null){
+        StudentAccount studentAccount = studentService.getStudent(id);
+        if(studentAccount == null){
             throw new ResourceNotFoundException("Student", "id", id);
         }
-        studentService.deleteStudent(student);
+        studentService.deleteStudent(studentAccount);
         return ResponseEntity.ok().build();
     }
 

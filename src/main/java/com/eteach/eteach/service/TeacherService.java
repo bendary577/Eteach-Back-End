@@ -2,7 +2,7 @@ package com.eteach.eteach.service;
 
 import com.eteach.eteach.dao.TeacherDAO;
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.model.Teacher;
+import com.eteach.eteach.model.TeacherAccount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -18,25 +18,25 @@ public class TeacherService {
         this.teacherDAO = teacherDAO;
     }
 
-    public Teacher createTeacher(Teacher teacher){
-        return this.teacherDAO.save(teacher);
+    public TeacherAccount createTeacher(TeacherAccount teacherAccount){
+        return this.teacherDAO.save(teacherAccount);
     }
 
-    public Teacher updateTeacher(Teacher oldTeacher, Teacher newTeacher){
-        return this.teacherDAO.save(newTeacher);
+    public TeacherAccount updateTeacher(TeacherAccount oldTeacherAccount, TeacherAccount newTeacherAccount){
+        return this.teacherDAO.save(newTeacherAccount);
     }
 
-    public Teacher getTeacher(Long id){
-        Teacher teacher =  this.teacherDAO.findById(id)
+    public TeacherAccount getTeacher(Long id){
+        TeacherAccount teacherAccount =  this.teacherDAO.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher", "id", id));
-        return teacher;
+        return teacherAccount;
     }
 
-    public List<Teacher> getAllTeachers(){
+    public List<TeacherAccount> getAllTeachers(){
         return this.teacherDAO.findAll();
     }
 
-    public void deleteTeacher(Teacher teacher){
-        this.teacherDAO.delete(teacher);
+    public void deleteTeacher(TeacherAccount teacherAccount){
+        this.teacherDAO.delete(teacherAccount);
     }
 }
