@@ -1,11 +1,15 @@
 package com.eteach.eteach.model;
 
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Collection;
 
 @Entity
-@Table(name = "roles")
-public class Role {
+@Table(name = "role")
+@EntityListeners(AuditingEntityListener.class)
+public class Role implements Serializable {
     @Id
     @Column(name = "role_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,10 +17,10 @@ public class Role {
 
     private String name;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "roles_privileges",
-               joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
-               inverseJoinColumns = @JoinColumn(name = "privilege_id", referencedColumnName = "id"))
+               joinColumns = @JoinColumn(name = "role_id"),
+               inverseJoinColumns = @JoinColumn(name = "privilege_id"))
     private Collection<Privilege> privileges;
 
     public Role(){}
