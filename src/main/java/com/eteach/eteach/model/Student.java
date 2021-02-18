@@ -136,4 +136,11 @@ public class Student implements Serializable {
     public void setImage(String image) {
         this.image = image;
     }
+
+    @Transient
+    public String getImagePath() {
+        if (image == null || id == null) return null;
+
+        return "/user-photos/" + id + "/" + image;
+    }
 }

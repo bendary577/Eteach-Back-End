@@ -3,10 +3,15 @@ package com.eteach.eteach.api;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.Student;
 import com.eteach.eteach.service.StudentService;
+import com.eteach.eteach.utils.FileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -21,7 +26,13 @@ public class StudentController {
     }
 
     @PostMapping("/")
-    public String postStudent(@Valid @RequestBody Student student){
+    public String postStudent(@Valid @RequestBody Student student, @RequestParam("image") MultipartFile image) throws IOException {
+        String fileName = StringUtils.cleanPath(image.getOriginalFilename());
+        if(image != null) {
+            student.setImage(fileName);
+            String imageUploadDirectory = "user-photos/" + student.getId();
+            FileUpload.saveFile(imageUploadDirectory, fileName, image);
+        }
         this.studentService.createStudent(student);
         return "saved";
     }
