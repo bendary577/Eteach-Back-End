@@ -9,8 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
 
@@ -26,25 +27,42 @@ public class StudentController {
     }
 
     @PostMapping("/")
-    public String postStudent(@Valid @RequestBody Student student, @RequestParam("image") MultipartFile image) throws IOException {
-        String fileName = StringUtils.cleanPath(image.getOriginalFilename());
-        if(image != null) {
-            student.setImage(fileName);
-            String imageUploadDirectory = "user-photos/" + student.getId();
-            FileUpload.saveFile(imageUploadDirectory, fileName, image);
+    public String postStudent(@Valid @RequestBody Student student) {
+        this.studentService.createStudent(student);
+        return "saved";
+    }
+
+    @PostMapping("/upload/{id}/image/")
+    public String uploadImage(@PathVariable(value = "id") Long id, @Valid @NotNull @NotEmpty @RequestParam("image") MultipartFile image) throws IOException {
+        Student student = studentService.getStudent(id);
+        if(student == null){
+            throw new ResourceNotFoundException("Student", "id", id);
         }
+        String fileName = StringUtils.cleanPath(image.getOriginalFilename());
+        student.setImage(fileName);
+        String imageUploadDirectory = "user-photos/" + student.getId();
+        FileUpload.saveFile(imageUploadDirectory, fileName, image);
         this.studentService.createStudent(student);
         return "saved";
     }
 
     @GetMapping("/")
     public List<Student> getAllStudents() {
-        return studentService.getAllStudents();
+        List<Student> students;
+        students = studentService.getAllStudents();
+        if(students == null){
+            throw new ResourceNotFoundException("Student", "id", 001);
+        }
+        return students;
     }
 
     @GetMapping("/{id}")
     public Student getStudent(@PathVariable(value = "id") Long id) {
-        return studentService.getStudent(id);
+        Student student = studentService.getStudent(id);
+        if(student == null){
+            throw new ResourceNotFoundException("Student", "id", id);
+        }
+        return student;
     }
 
     @PutMapping("/{id}")
