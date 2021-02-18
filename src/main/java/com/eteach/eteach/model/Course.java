@@ -43,7 +43,7 @@ public class Course implements Serializable {
     private float price;
 
     @Column(nullable = false, length = 11)
-    private String trial_video;
+    private String trailer_video;
 
     @NotBlank
     @Column(nullable = false, length = 80)
@@ -102,7 +102,7 @@ public class Course implements Serializable {
 
     public Course(@JsonProperty("id")Long id, @JsonProperty("name") String name,
                   @JsonProperty("description") String description, @JsonProperty("price") float price,
-                  @JsonProperty("trial_video") String trial_video, @JsonProperty("duration") String duration,
+                  @JsonProperty("trailer_video") String trailer_video, @JsonProperty("duration") String duration,
                   @JsonProperty("intro") String intro, @JsonProperty("image")String image,
                   @JsonProperty("grade") Grade grade, @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
                   @JsonProperty("students_number") int students_number, @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level,
@@ -112,12 +112,11 @@ public class Course implements Serializable {
         this.name = name;
         this.description = description;
         this.price = price;
-        this.trial_video = trial_video;
+        this.trailer_video = trailer_video;
         this.duration = duration;
         this.intro = intro;
         this.image = image;
         this.grade = grade;
-        this.trial_video = trial_video;
         this.what_yow_will_learn = what_yow_will_learn;
         this.students_number = students_number;
         this.difficulty_level = difficulty_level;
@@ -176,12 +175,12 @@ public class Course implements Serializable {
         this.price = price;
     }
 
-    public String getTrial_video() {
-        return trial_video;
+    public String getTrailer_video() {
+        return trailer_video;
     }
 
-    public void setTrial_video(String trial_video) {
-        this.trial_video = trial_video;
+    public void setTrailer_video(String trailer_video) {
+        this.trailer_video = trailer_video;
     }
 
     public String getDuration() {
@@ -288,7 +287,11 @@ public class Course implements Serializable {
         this.updated_at = updated_at;
     }
 
-
+    @Transient
+    public String getTrailerVideoPath() {
+        if (trailer_video == null || id == null) return null;
+        return "/videos/" + id + "/" + trailer_video;
+    }
 
 
 }
