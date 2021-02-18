@@ -29,7 +29,7 @@ public class Section implements Serializable {
 
     public Section() { }
 
-    public Section(@JsonProperty("id")Long id, @JsonProperty("first_name") String title){
+    public Section(@JsonProperty("id")Long id, @JsonProperty("title") String title){
         this.id = id;
         this.title = title;
     }
