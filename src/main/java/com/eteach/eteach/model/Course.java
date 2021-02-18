@@ -1,12 +1,14 @@
 package com.eteach.eteach.model;
 
 
+import com.eteach.eteach.enums.Rating;
 import com.eteach.eteach.enums.Subjects;
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
-import com.eteach.eteach.enums.Rating;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -87,6 +89,10 @@ public class Course implements Serializable {
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     private List<Section> sections;
+
+    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
+    private List<RatingInstance> ratings;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
@@ -208,6 +214,14 @@ public class Course implements Serializable {
 
     public void setGrade(Grade grade) {
         this.grade = grade;
+    }
+
+    public List<RatingInstance> getRatings() {
+        return ratings;
+    }
+
+    public void setRatings(List<RatingInstance> ratings) {
+        this.ratings = ratings;
     }
 
     public String getWhat_yow_will_learn() {

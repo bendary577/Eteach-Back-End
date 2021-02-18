@@ -7,9 +7,9 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Entity
-@Table(name="choice")
+@Table(name="rating_instance")
 @EntityListeners(AuditingEntityListener.class)
-public class Choice implements Serializable {
+public class RatingInstance implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
@@ -17,20 +17,15 @@ public class Choice implements Serializable {
 
     @NotBlank
     @Column(nullable = false, length = 100)
-    private String text;
-
-    @NotBlank
-    @Column(nullable = false, length = 100)
-    private char letter;
+    private float value;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "qustion_id", referencedColumnName = "id")
-    private Question question;
+    @JoinColumn(name = "course_id", referencedColumnName = "id")
+    private Course course;
 
-    public Choice() { }
+    public RatingInstance() { }
 
-    public Choice(@JsonProperty("id")Long id, @JsonProperty("text") String text,
-                  @JsonProperty("letter")char letter){
+    public RatingInstance(@JsonProperty("id")Long id, @JsonProperty("value") float value){
 
     }
 
