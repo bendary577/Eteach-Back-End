@@ -2,10 +2,10 @@ package com.eteach.eteach.api;
 
 import com.eteach.eteach.model.User;
 import com.eteach.eteach.jwt.JwtTokenProvider;
-import com.eteach.eteach.security.payload.ApiResponse;
-import com.eteach.eteach.security.payload.JwtAuthenticationResponse;
-import com.eteach.eteach.security.payload.LoginRequest;
-import com.eteach.eteach.security.payload.SignUpRequest;
+import com.eteach.eteach.http.ApiResponse;
+import com.eteach.eteach.http.JwtAuthenticationResponse;
+import com.eteach.eteach.http.LoginRequest;
+import com.eteach.eteach.http.SignUpRequest;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,17 +29,17 @@ import static com.eteach.eteach.security.rolesandpermessions.Role.*;
 public class AuthenticationController {
 
     public final AuthenticationManager authenticationManager;
-    public final PasswordEncoder PasswordEncoder;
+    public final PasswordEncoder passwordEncoder;
     public final JwtTokenProvider JwtTokenProvider;
     public final ApplicationUserService applicationUserService;
 
     @Autowired
     public AuthenticationController(AuthenticationManager authenticationManager,
-                                   PasswordEncoder PasswordEncoder,
+                                   PasswordEncoder passwordEncoder,
                                    JwtTokenProvider JwtTokenProvider,
                                    ApplicationUserService applicationUserService) {
         this.authenticationManager = authenticationManager;
-        this.PasswordEncoder = PasswordEncoder;
+        this.passwordEncoder = passwordEncoder;
         this.JwtTokenProvider = JwtTokenProvider;
         this.applicationUserService = applicationUserService;
     }
@@ -76,9 +76,7 @@ public class AuthenticationController {
 
         // Creating user's account
         User user = new User(signUpRequest.getFirst_name(), signUpRequest.getSecond_name(), signUpRequest.getUsername(),
-                signUpRequest.getEmail(), signUpRequest.getPassword());
-
-        user.setPassword(PasswordEncoder.encode(user.getPassword()));
+                signUpRequest.getEmail(), passwordEncoder.encode(signUpRequest.getPassword()));
 
         user.setRole(TEACHER);
 

@@ -8,12 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository("userdaoimp")
+@Repository
 public interface ApplicationUserDao extends JpaRepository<User, Long> {
     Optional<ApplicationUser> findUserByUsername(String username);
 
     Optional<ApplicationUser> findUserById(Long id);
-
 
     @Query("SELECT u FROM User u WHERE u.email = :username")
     Optional<User> getUserByUsername(@Param("username") String username);

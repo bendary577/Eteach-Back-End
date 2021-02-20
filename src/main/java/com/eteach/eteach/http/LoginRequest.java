@@ -1,4 +1,4 @@
-package com.eteach.eteach.security.payload;
+package com.eteach.eteach.http;
 
 import javax.validation.constraints.NotBlank;
 

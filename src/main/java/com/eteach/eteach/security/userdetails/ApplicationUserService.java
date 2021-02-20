@@ -7,18 +7,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ApplicationUserService implements UserDetailsService {
 
     private final ApplicationUserDao applicationUserDao;
 
-    @Autowired
-    public ApplicationUserService(@Qualifier("fakeuserdaoimp") ApplicationUserDao applicationUserDao) {
+    public ApplicationUserService(@Autowired @Qualifier("fakeuserdaoimp") ApplicationUserDao applicationUserDao) {
         this.applicationUserDao = applicationUserDao;
     }
 
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return applicationUserDao
                 .findUserByUsername(username)
@@ -39,7 +40,6 @@ public class ApplicationUserService implements UserDetailsService {
     public boolean existsByEmail(String email){
         return true;
     }
-
 
     public UserDetails loadUserById(Long id ) throws UsernameNotFoundException {
         return applicationUserDao
