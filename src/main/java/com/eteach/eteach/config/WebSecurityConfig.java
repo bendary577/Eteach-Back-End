@@ -1,22 +1,27 @@
 package com.eteach.eteach.config;
 
-import com.eteach.eteach.security.JwtAuthenticationEntryPoint;
-import com.eteach.eteach.security.JwtAuthenticationFilter;
+import com.eteach.eteach.jwt.JwtTokenProvider;
+import com.eteach.eteach.jwt.JwtTokenVerifier;
+import com.eteach.eteach.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.BeanIds;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import javax.crypto.SecretKey;
+import static com.eteach.eteach.security.rolesandpermessions.Role.*;
+import com.eteach.eteach.security.userdetails.ApplicationUserService;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,48 +30,74 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                             jsr250Enabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    private UserDetailsService jwtUserDetailsService;
+    private final PasswordEncoder passwordEncoder;
+    private final ApplicationUserService applicationUserService;
+    private final SecretKey secretKey;
+    private final JwtConfig jwtConfig;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    public WebSecurityConfig(PasswordEncoder passwordEncoder,
+                             ApplicationUserService applicationUserService,
+                             SecretKey secretKey,
+                             JwtConfig jwtConfig,
+                             JwtTokenProvider jwtTokenProvider) {
+        this.passwordEncoder = passwordEncoder;
+        this.applicationUserService = applicationUserService;
+        this.secretKey = secretKey;
+        this.jwtConfig = jwtConfig;
+        this.jwtTokenProvider = jwtTokenProvider;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtRequestFilter;
-
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        // configure AuthenticationManager so that it knows from where to load
-        // user for matching credentials
-        // Use BCryptPasswordEncoder
-        authenticationManagerBuilder.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .cors()
+                .and()
+                .csrf().disable()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
+                .addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig, jwtTokenProvider),JwtUsernameAndPasswordAuthenticationFilter.class)
+                .authorizeRequests()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()   //public api endpoints
+                .antMatchers("/api/**").hasRole(STUDENT.name())
+                .anyRequest()                                                           //private api endpoints
+                .authenticated();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(daoAuthenticationProvider());
+    }
+
+    @Override @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
 
-    @Override
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
-        // We don't need CSRF for this example
-        httpSecurity.csrf().disable()
-                // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/authenticate", "/register").permitAll().
-                // all other requests need to be authenticated
-                 anyRequest().authenticated().and().
-                // make sure we use stateless session; session won't be used to
-                // store user's state.
-                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-        // Add a filter to validate the tokens with every request
-        httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(applicationUserService);
+        return provider;
     }
+
+    // Used by spring security if CORS is enabled.
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
+
 }

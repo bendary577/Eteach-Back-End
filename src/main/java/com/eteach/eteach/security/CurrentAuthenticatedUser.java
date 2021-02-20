@@ -11,3 +11,8 @@ import java.lang.annotation.*;
 public @interface CurrentAuthenticatedUser {
 
 }
+
+
+/*
+* access the currently authenticated user in the controllers.
+* */

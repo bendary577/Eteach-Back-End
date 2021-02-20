@@ -23,6 +23,7 @@ public class TeacherAccount implements Serializable {
     private String image;
 
     @Column(nullable = false, length = 100)
+    @Enumerated(EnumType.ORDINAL)
     private Subjects subject;
 
     @Column(nullable = false, length = 100)

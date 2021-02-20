@@ -5,7 +5,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
-import java.util.HashSet;
+import com.eteach.eteach.security.rolesandpermessions.Role;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import java.util.Set;
 
 @Entity
@@ -24,7 +26,6 @@ public class User implements Serializable {
     @NotBlank
     @Column(nullable = false, length = 50)
     private String second_name;
-
 
     @NotBlank
     @Column(nullable = false, length = 50)
@@ -45,18 +46,26 @@ public class User implements Serializable {
 
     private boolean tokenExpired;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(name = "users_roles",
-               joinColumns = @JoinColumn(name = "user_id"),
-               inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    private Role role;
 
+    public User(){ }
 
-    public User() { }
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public User(String first_name, String second_name,String username, String email, String password) {
+        this.username = username;
+        this.password = password;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
 
     public User(@JsonProperty("id")Long id, @JsonProperty("first_name") String first_name,
-                   @JsonProperty("second_name") String second_name, @JsonProperty("email") String email,
-                   @JsonProperty("password") String password, @JsonProperty("phone_number") String phone_number){
+                @JsonProperty("second_name") String second_name, @JsonProperty("email") String email,
+                @JsonProperty("password") String password, @JsonProperty("phone_number") String phone_number){
         this.id = id;
         this.first_name = first_name;
         this.second_name = second_name;
@@ -122,12 +131,12 @@ public class User implements Serializable {
         this.phone_number = phone_number;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public boolean isEnabled(){
@@ -137,4 +146,6 @@ public class User implements Serializable {
     public void setEnabled(boolean value){
         this.enabled=value;
     }
+
+    public Set<SimpleGrantedAuthority> getPermissions(){ return this.role.getGrantedAuthorities();}
 }
