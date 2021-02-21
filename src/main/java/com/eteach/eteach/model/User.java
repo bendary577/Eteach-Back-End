@@ -11,7 +11,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Set;
 
 @Entity
-@Table(name="user")
+@Table(name="user",
+        uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+})
 @EntityListeners(AuditingEntityListener.class)
 public class User implements Serializable {
     @Id
@@ -56,8 +60,8 @@ public class User implements Serializable {
     }
 
     public User(String first_name, String second_name,String username, String email, String password) {
-        this.username = username;
-        this.password = password;
+        this.first_name = first_name;
+        this.second_name = second_name;
         this.username = username;
         this.email = email;
         this.password = password;

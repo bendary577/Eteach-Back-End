@@ -18,6 +18,7 @@ public class JwtConfig {
     }
 
     public String getSecretKey() {
+        System.out.println(secretKey);
         return secretKey;
     }
 
@@ -42,6 +43,7 @@ public class JwtConfig {
     }
 
     public String getAuthorizationHeader() {
+        System.out.println(HttpHeaders.AUTHORIZATION);
         return HttpHeaders.AUTHORIZATION;
     }
 }

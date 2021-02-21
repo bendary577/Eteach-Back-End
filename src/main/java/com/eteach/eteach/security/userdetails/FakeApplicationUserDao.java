@@ -3,48 +3,71 @@ package com.eteach.eteach.security.userdetails;
 import com.eteach.eteach.model.User;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 
 import static com.eteach.eteach.security.rolesandpermessions.Role.*;
 
 @Repository("fakeuserdaoimp")
-public abstract class FakeApplicationUserDao implements ApplicationUserDao {
+public class FakeApplicationUserDao implements ApplicationUserDao {
 
     private final PasswordEncoder passwordEncoder;
+    private List<ApplicationUser> applicationUsers;
 
     @Autowired
     public FakeApplicationUserDao(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
+        initializeApplicationUserList();
     }
 
-    /*-------------------------------------- get users by their user name -----------------------------------------*/
+    /*------------------------------- GET APPLICATION USER BY USERNAME ----------------------------------*/
     @Override
-    public Optional<ApplicationUser> findUserByUsername(String username) {
+    public Optional<ApplicationUser> findApplicationUserByUsername(String username) {
         return getFakeApplicationUsers()
                 .stream()
                 .filter(applicationUser -> username.equals(applicationUser.getUsername()))
                 .findFirst();
     }
 
-    /*-------------------------------------- get users by their user name -----------------------------------------*/
-    /*
+    /*------------------------------------ GET USER BY USERNAME -----------------------------------------*/
     @Override
-    public Optional<ApplicationUser> findUserById(Long id) {
-        return new ApplicationUser();
-
+    public Optional<User> findUserByUsername(String username) {
+        return getFakeUsers()
+                .stream()
+                .filter(applicationUser -> username.equals(applicationUser.getUsername()))
+                .findFirst();
     }
-    */
 
-    /*-------------------------------------- get some fake users -----------------------------------------*/
-    private List<ApplicationUser> getFakeApplicationUsers() {
-        User user = new User("annasmith", passwordEncoder.encode("password"));
-        List<ApplicationUser> applicationUsers = Lists.newArrayList(
+    /*------------------------------------ CREATE NEW APPLICATION USER -----------------------------------*/
+    @Override
+    public UserDetails save(User user) {
+        initializeApplicationUserList();
+        ApplicationUser appUser = new ApplicationUser(
+                                    user,
+                                    user.getRole().getGrantedAuthorities(),
+                                    true,
+                                    true,
+                                    true,
+                                    true
+                            );
+        this.applicationUsers.add(appUser);
+        loopOnUsersList();
+        return appUser;
+    }
+
+    /*----------------------------------------- INITIALIZE APPLICATION USERS LIST ----------------------------------------------------------------*/
+
+    private void initializeApplicationUserList(){
+        User user1 = new User("mohamed", passwordEncoder.encode("password"));
+        System.out.println(user1.getPassword());
+        User user2 = new User("ahmed", passwordEncoder.encode("password"));
+        User user3 = new User("mistafa", passwordEncoder.encode("password"));
+         this.applicationUsers = Lists.newArrayList(
                 new ApplicationUser(
-                        user,
+                        user1,
                         STUDENT.getGrantedAuthorities(),
                         true,
                         true,
@@ -52,7 +75,7 @@ public abstract class FakeApplicationUserDao implements ApplicationUserDao {
                         true
                 ),
                 new ApplicationUser(
-                        user,
+                        user2,
                         ADMIN.getGrantedAuthorities(),
                         true,
                         true,
@@ -60,7 +83,7 @@ public abstract class FakeApplicationUserDao implements ApplicationUserDao {
                         true
                 ),
                 new ApplicationUser(
-                        user,
+                        user3,
                         ADMINTRAINEE.getGrantedAuthorities(),
                         true,
                         true,
@@ -68,8 +91,45 @@ public abstract class FakeApplicationUserDao implements ApplicationUserDao {
                         true
                 )
         );
+    }
 
+    /*-------------------------------------- LOOP ON APPLICATION USERS -----------------------------------------*/
+    public void loopOnUsersList(){
+        for(int i=0; i<getFakeApplicationUsers().size();i++){
+            System.out.println("user = " + getFakeApplicationUsers().get(i).getUsername());
+        }
+    }
+
+    /*-------------------------------------- GET SOME FAKE APPLICATION USERS -----------------------------------------*/
+    private List<ApplicationUser> getFakeApplicationUsers() {
         return applicationUsers;
     }
 
+    /*-------------------------------------- GET SOME FAKE USERS -----------------------------------------*/
+    private List<User> getFakeUsers() {
+        List<User> users = Lists.newArrayList(
+                new User("mohamed",
+                        "bendary",
+                        "bendary577",
+                        "bendary@gmail.com",
+                        "password"
+                ),
+                new User(
+                        "mohamed",
+                        "bendary",
+                        "bendary577",
+                        "bendary@gmail.com",
+                        "password"
+                ),
+                new User(
+                        "mohamed",
+                        "bendary",
+                        "bendary577",
+                        "bendary@gmail.com",
+                        "password"
+                )
+        );
+
+        return users;
+    }
 }

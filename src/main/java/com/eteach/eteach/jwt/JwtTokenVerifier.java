@@ -1,80 +1,57 @@
 package com.eteach.eteach.jwt;
 
-import com.eteach.eteach.config.JwtConfig;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import javax.crypto.SecretKey;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class JwtTokenVerifier extends OncePerRequestFilter {
 
-    private final SecretKey secretKey;
-    private final JwtConfig jwtConfig;
+    @Autowired
     private final JwtTokenProvider jwtTokenProvider;
 
-    public JwtTokenVerifier(SecretKey secretKey,
-                            JwtConfig jwtConfig,
-                            JwtTokenProvider jwtTokenProvider) {
-        this.secretKey = secretKey;
-        this.jwtConfig = jwtConfig;
-        this.jwtTokenProvider = jwtTokenProvider;
+    @Autowired
+    private ApplicationUserService userDetailsService;
+
+    @Autowired
+    public JwtTokenVerifier(JwtTokenProvider jwtTokenProvider){
+        this.jwtTokenProvider =jwtTokenProvider;
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-        String authorizationHeader = request.getHeader(jwtConfig.getAuthorizationHeader());
-
-        if (!jwtTokenProvider.isTokenValid(authorizationHeader)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = jwtTokenProvider.getJwtFromRequest(authorizationHeader);
-
         try {
-            Jws<Claims> claimsJws = Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token);
+            String token = jwtTokenProvider.getJwtFromRequest(request);
 
-            Claims body = claimsJws.getBody();
+            if (token != null || !jwtTokenProvider.validateJwtToken(token)) {
 
-            String username = body.getSubject();
+                String username = jwtTokenProvider.getUserNameFromJwtToken(token);
 
-            var authorities = (List<Map<String, String>>) body.get("authorities");
-
-            Set<SimpleGrantedAuthority> simpleGrantedAuthorities = authorities.stream()
-                    .map(m -> new SimpleGrantedAuthority(m.get("authority")))
-                    .collect(Collectors.toSet());
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    username,
-                    null,
-                    simpleGrantedAuthorities
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
         } catch (JwtException e) {
-            throw new IllegalStateException(String.format("Token %s cannot be trusted", token));
+            throw new IllegalStateException(String.format("Token %s cannot be trusted", "hamada"));
         }
 
         filterChain.doFilter(request, response);

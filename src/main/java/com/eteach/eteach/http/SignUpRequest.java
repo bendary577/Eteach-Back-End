@@ -1,8 +1,12 @@
 package com.eteach.eteach.http;
 
 import javax.validation.constraints.*;
+import java.io.Serializable;
 
-public class SignUpRequest {
+public class SignUpRequest implements Serializable {
+
+    private static final long serialVersionUID = -8091879091924046844L;
+
     @NotBlank
     @Size(min = 4, max = 40)
     private String first_name;

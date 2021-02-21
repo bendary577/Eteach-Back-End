@@ -10,8 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class JwtTokenProvider {
@@ -37,25 +40,17 @@ public class JwtTokenProvider {
                 .claim("authorities", applicationUser.getAuthorities())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecretKey.secretKey())
+                .signWith(jwtSecretKey.secretKey())
                 .compact();
     }
 
     /*--------------------------------- EXTRACTS TOKEN FROM REQUEST --------------------------------------*/
-    public String getJwtFromRequest(String authorizationHeader) {
-        if (isTokenValid(authorizationHeader)) {
-            authorizationHeader.replace(jwtConfig.getTokenPrefix(), "");
-            return authorizationHeader;
-        }
-        return "we couldn't extract token from authorization header";
-    }
-
-    /*---------------------------------- VALIDATE TOKEN -------------------------------------------*/
-    public boolean isTokenValid(String authorizationHeader){
-        if(!Strings.isNullOrEmpty(authorizationHeader) || authorizationHeader.startsWith(jwtConfig.getTokenPrefix())){
-            return true;
+    public String getJwtFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader(jwtConfig.getAuthorizationHeader());
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.replace("Bearer ", "");
         }else{
-            return false;
+            return null;
         }
     }
 
@@ -64,20 +59,24 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(jwtSecretKey.secretKey()).parseClaimsJws(token).getBody().getSubject();
     }
 
-    /*--------------------------------- GET USER ID FROM TOKEN -----------------------------------*/
-    public Long getUserIdFromJWT(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecretKey.secretKey())
-                .parseClaimsJws(token)
-                .getBody();
-
-        return Long.parseLong(claims.getSubject());
+    /* ------------------------------ GET AUTHORITIES FROM TOKEN-------------------------------------------------*/
+    public List<Map<String, String>> getAuthoritiesFromJwtToken(String token) {
+        List<Map<String, String>> authorities = (List<Map<String, String>>) Jwts.parser().setSigningKey(jwtSecretKey.secretKey()).parseClaimsJws(token).getBody().get("authorities");
+        return authorities;
     }
 
+    /*------------------------------ CHECKS IF TOKEN IS EXPIRED -------------------------------------*/
+    /*
+    private Boolean isTokenExpired(String token) {
+        final Date expiration = jwtConfig.getTokenExpirationAfterDays();
+        return expiration.before(new Date());
+    }
+    */
     /*--------------------------------- CHECKS IF TOKEN IS VALID -----------------------------------*/
-    public boolean isTokenTrusted(String authToken) {
+    public boolean validateJwtToken(String token) {
         try {
-            Jwts.parser().setSigningKey(jwtSecretKey.secretKey()).parseClaimsJws(authToken);
+            Jws<Claims> jwtClaims = Jwts.parser().setSigningKey(jwtSecretKey.secretKey()).parseClaimsJws(token);
+            System.out.println("claims :" + jwtClaims);
             return true;
         } catch (SignatureException ex) {
             logger.error("Invalid JWT signature");

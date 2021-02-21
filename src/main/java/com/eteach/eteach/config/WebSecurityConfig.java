@@ -2,7 +2,7 @@ package com.eteach.eteach.config;
 
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.jwt.JwtTokenVerifier;
-import com.eteach.eteach.jwt.JwtUsernameAndPasswordAuthenticationFilter;
+import com.eteach.eteach.security.JwtAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import javax.crypto.SecretKey;
-import static com.eteach.eteach.security.rolesandpermessions.Role.*;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -31,22 +30,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
     private final ApplicationUserService applicationUserService;
-    private final SecretKey secretKey;
-    private final JwtConfig jwtConfig;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     public WebSecurityConfig(PasswordEncoder passwordEncoder,
                              ApplicationUserService applicationUserService,
-                             SecretKey secretKey,
-                             JwtConfig jwtConfig,
+                             JwtAuthenticationEntryPoint unauthorizedHandler,
                              JwtTokenProvider jwtTokenProvider) {
         this.passwordEncoder = passwordEncoder;
         this.applicationUserService = applicationUserService;
-        this.secretKey = secretKey;
-        this.jwtConfig = jwtConfig;
+        this.unauthorizedHandler = unauthorizedHandler;
         this.jwtTokenProvider = jwtTokenProvider;
-
     }
 
     @Override
@@ -55,16 +50,27 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and()
                 .csrf().disable()
+                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
-                .addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig, jwtTokenProvider),JwtUsernameAndPasswordAuthenticationFilter.class)
+                //.addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey, jwtTokenProvider))
+                //.addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig, jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()   //public api endpoints
-                .antMatchers("/api/**").hasRole(STUDENT.name())
-                .anyRequest()                                                           //private api endpoints
+                .antMatchers("/api/v1/auth/signin", "/api/v1/auth/signup" ).permitAll()
+                .antMatchers("api/v1/auth/**").permitAll()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+                .antMatchers("/api/v1/courses/**").permitAll()                              //public api endpoints
+                //.antMatchers("/api/**").hasRole(STUDENT.name())
+                .anyRequest()                                                                       //private api endpoints
                 .authenticated();
+
+        http.addFilterBefore(JwtTokenVerifierFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public JwtTokenVerifier JwtTokenVerifierFilter() {
+        return new JwtTokenVerifier(jwtTokenProvider);
     }
 
     @Override
@@ -72,11 +78,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.authenticationProvider(daoAuthenticationProvider());
     }
 
-    @Override @Bean
+    @Bean
+    @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
 
+
+    // configure AuthenticationManager so that it knows from where to load
+    // user for matching credentials
+    // Use BCryptPasswordEncoder
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -84,6 +95,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         provider.setUserDetailsService(applicationUserService);
         return provider;
     }
+
 
     // Used by spring security if CORS is enabled.
     @Bean

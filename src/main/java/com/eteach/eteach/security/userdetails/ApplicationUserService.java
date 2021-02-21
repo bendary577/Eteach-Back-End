@@ -9,38 +9,54 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class ApplicationUserService implements UserDetailsService {
 
-    private final ApplicationUserDao applicationUserDao;
+    private final RealApplicationUserDao applicationUserDao;
 
-    public ApplicationUserService(@Autowired @Qualifier("fakeuserdaoimp") ApplicationUserDao applicationUserDao) {
+    @Autowired
+    public ApplicationUserService(@Qualifier("realuserdaoimp") RealApplicationUserDao applicationUserDao) {
         this.applicationUserDao = applicationUserDao;
     }
 
+    /*-------------------------------------- GET USER BY USERNAME -----------------------------------------*/
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return applicationUserDao
+        User user = applicationUserDao
                 .findUserByUsername(username)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format("Username %s not found", username))
-                );
+                        new UsernameNotFoundException(String.format("Username %s not found", username)));
+        return ApplicationUser.create(user);
+
     }
 
-    public User createUser(User user){
-        applicationUserDao.save(user);
-        return user;
+    /*-------------------------------------- CREATE NEW USER -----------------------------------------*/
+    public User createUser(User user) {
+        return applicationUserDao.save(user);
+
     }
 
+    /*-------------------------------------- GET APPLICATION USER BY USERNAME -----------------------------------------*/
+   /*
+    @Transactional
+    public Optional<ApplicationUser> findApplicationUserByUsername(String username){
+        return applicationUserDao.findApplicationUserByUsername(username);
+    }
+    */
+    /*-------------------------------------- IS USER EXISTS BY USERNAME -----------------------------------------*/
     public boolean existsByUsername(String username){
-        return true;
+        return false;
     }
 
     public boolean existsByEmail(String email){
-        return true;
+        return false;
     }
 
+    /*-------------------------------------- GET USER BY ID -----------------------------------------*/
+    /*
     public UserDetails loadUserById(Long id ) throws UsernameNotFoundException {
         return applicationUserDao
                 .findUserById(id)
@@ -48,5 +64,7 @@ public class ApplicationUserService implements UserDetailsService {
                         new UsernameNotFoundException(String.format("Username %d not found", id))
                 );
     }
+    */
+
 
 }
