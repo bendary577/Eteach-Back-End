@@ -59,9 +59,6 @@ public class AuthenticationController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         //GET USER DETAILS
-        /* UserDetails applicationUser = applicationUserService
-                .loadUserByUsername(loginRequest.getUsername());
-        */
         ApplicationUser applicationUser = (ApplicationUser) authentication.getPrincipal();
 
         //GENERATE A NEW AUTH TOKEN FOR THE NEW USER
@@ -106,12 +103,11 @@ public class AuthenticationController {
         System.out.println("signUpRequest uname= " + signUpRequest.getUsername());
         System.out.println("signUpRequest email= " + signUpRequest.getEmail());
         System.out.println("signUpRequest password= " + signUpRequest.getPassword());
+        System.out.println("signUpRequest password= " + signUpRequest.getPhone_number());
 
         //CREATE NEW USER INSTANCE
         User user = new User(signUpRequest.getFirst_name(), signUpRequest.getSecond_name(), signUpRequest.getUsername(),
-                signUpRequest.getEmail(), passwordEncoder.encode(signUpRequest.getPassword()));
-
-        System.out.println("user : " + user.getPassword());
+                signUpRequest.getEmail(), passwordEncoder.encode(signUpRequest.getPassword()), signUpRequest.getPhone_number());
 
         //SET USER ROLE
         user.setRole(TEACHER);

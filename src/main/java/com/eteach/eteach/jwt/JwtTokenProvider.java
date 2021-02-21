@@ -47,7 +47,9 @@ public class JwtTokenProvider {
     /*--------------------------------- EXTRACTS TOKEN FROM REQUEST --------------------------------------*/
     public String getJwtFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader(jwtConfig.getAuthorizationHeader());
+        System.out.println("auth header is :" + authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            System.out.println("auth header starts with bearer");
             return authHeader.replace("Bearer ", "");
         }else{
             return null;

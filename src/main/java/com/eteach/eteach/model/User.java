@@ -59,12 +59,13 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public User(String first_name, String second_name,String username, String email, String password) {
+    public User(String first_name, String second_name,String username, String email, String password, String phone_number) {
         this.first_name = first_name;
         this.second_name = second_name;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.phone_number = phone_number;
     }
 
     public User(@JsonProperty("id")Long id, @JsonProperty("first_name") String first_name,

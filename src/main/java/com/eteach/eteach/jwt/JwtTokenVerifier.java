@@ -32,8 +32,17 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+        System.out.println("request path is :" + path);
+        if ("/api/v1/auth/signup/".equals(path) || "/api/v1/auth/signin/".equals(path)) {
+            System.out.println("sign up filter");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String token = jwtTokenProvider.getJwtFromRequest(request);
+            System.out.println("token is:" + token);
 
             if (token != null || !jwtTokenProvider.validateJwtToken(token)) {
 

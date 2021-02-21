@@ -112,21 +112,24 @@ public class FakeApplicationUserDao implements ApplicationUserDao {
                         "bendary",
                         "bendary577",
                         "bendary@gmail.com",
-                        "password"
+                        "password",
+                        "0119348473"
                 ),
                 new User(
                         "mohamed",
                         "bendary",
                         "bendary577",
                         "bendary@gmail.com",
-                        "password"
+                        "password",
+                        "0119348473"
                 ),
                 new User(
                         "mohamed",
                         "bendary",
                         "bendary577",
                         "bendary@gmail.com",
-                        "password"
+                        "password",
+                        "0119348473"
                 )
         );
 
