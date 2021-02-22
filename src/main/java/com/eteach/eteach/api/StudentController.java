@@ -3,7 +3,6 @@ package com.eteach.eteach.api;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.StudentAccount;
 import com.eteach.eteach.service.AccountService;
-import com.eteach.eteach.utils.FileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;

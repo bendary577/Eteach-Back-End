@@ -1,14 +1,15 @@
 package com.eteach.eteach.api;
-
+import com.eteach.eteach.enums.FileTypes;
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.ApiResponse;
 import com.eteach.eteach.model.Course;
+import com.eteach.eteach.model.File;
 import com.eteach.eteach.service.CourseService;
-import com.eteach.eteach.utils.FileUpload;
+import com.eteach.eteach.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
@@ -22,57 +23,84 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
-
-    /*@Value("${server.compression.mime-types}")
-    private List<String> contentVideos;
-    */
+    private final FileService fileService;
 
     @Autowired
-    public CourseController(CourseService courseService){
+    public CourseController(CourseService courseService, FileService fileService){
         this.courseService = courseService;
+        this.fileService = fileService;
     }
 
+    /*------------------------------------ SAVE A NEW COURSE ------------------------------------- */
     @PostMapping("/")
-    public String postCourse(@Valid @RequestBody Course course){
+    public ResponseEntity<?> postCourse(@Valid @RequestBody Course course){
         this.courseService.createCourse(course);
-        return "saved";
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"course saved successfully"));
     }
 
-    /*
-    @PostMapping(value= "/upload/{id}/trailer_video/", consumes = {
+
+    /*------------------------------------ UPLOAD COURSE TRAILER VIDEO ------------------------------------- */
+    @PostMapping(value= "/upload/{id}/video/", consumes = {
                                                     MediaType.MULTIPART_FORM_DATA_VALUE,
                                                     MediaType.APPLICATION_OCTET_STREAM_VALUE})
-    public String uploadTrailerVideo(@PathVariable(value = "id") Long id, @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile video)throws IOException {
+    public ResponseEntity<?> uploadCourseVideo(@PathVariable(value = "id") Long id,
+                                                @PathVariable(value = "type") String type,
+                                                @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile file)throws IOException {
         Course course = courseService.getCourse(id);
-        String contentType = video.getContentType();
-        final long limit = 200 * 1024 * 1024;
+        String contentType = file.getContentType();
+        Long size = file.getSize();
+
         if(course == null){
-            throw new ResourceNotFoundException("Student", "id", id);
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST,"course not found"));
         }
-        if (!contentVideos.contains(contentType) || video.getSize() > limit ) {
-            return "error";
+        if(!fileService.validateVideoFile(contentType, size)){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST,"trailer video is not valid"));
         }
-        String fileName = StringUtils.cleanPath(video.getOriginalFilename());
-        course.setImage(fileName);
-        String trailerVideoUploadDirectory = "videos/" + course.getId();
-        FileUpload.saveFile(trailerVideoUploadDirectory, fileName, video);
-        this.courseService.createCourse(course);
-        return "saved";
+        File trailer_video = uploadFile(type, file, course);
+        course.setTrailer_video(trailer_video);
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"trailer video uploaded successfully"));
     }
-    */
 
+    /*------------------------------------ UPLOAD COURSE THUMBNAIL ------------------------------------- */
+    @PostMapping(value= "/upload/{id}/thumbnail/", consumes = {
+            MediaType.MULTIPART_FORM_DATA_VALUE,
+            MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    public ResponseEntity<?> uploadCourseThumbnail(@PathVariable(value = "id") Long id,
+                                          @PathVariable(value = "type") String type,
+                                          @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile file)throws IOException {
+        Course course = courseService.getCourse(id);
+        String contentType = file.getContentType();
+        Long size = file.getSize();
+
+        if(course == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST,"course not found"));
+        }
+        if(!fileService.validateImageFile(contentType, size)){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST,"thumbnail is not valid"));
+        }
+        File thumbnail = uploadFile(type, file, course);
+        course.setThumbnail(thumbnail);
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"course thumbnail uploaded successfully"));
+    }
+
+    /*------------------------------------ GET ALL COURSES WITH PAGINATION ------------------------------ */
     @GetMapping("/")
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+    public List<Course> getAllCourses( @RequestParam(defaultValue = "0") Integer pageNo,
+                                       @RequestParam(defaultValue = "10") Integer pageSize) {
+        return courseService.getAllCourses(pageNo, pageSize);
     }
 
+    /*------------------------------------ GET A SINGLE COURSE ----------------------------------------- */
     @GetMapping("/{id}")
     public Course getCourse(@PathVariable(value = "id") Long id) {
         return courseService.getCourse(id);
     }
 
+    /*------------------------------------ UPDATE COURSE INFO ------------------------------------- */
     @PutMapping("/{id}")
-    public Course updateCourse(@PathVariable(value = "id") Long id, @Valid @RequestBody Course newCourse) {
+    public Course updateCourse(@PathVariable(value = "id") Long id,
+
+                               @Valid @RequestBody Course newCourse) {
         Course oldCourse = courseService.getCourse(id);
         if(oldCourse == null){
             throw new ResourceNotFoundException("Course", "id", id);
@@ -80,6 +108,7 @@ public class CourseController {
         return courseService.updateCourse(oldCourse, newCourse);
     }
 
+    /*------------------------------------ DELETE A SINGLE COURSE ----------------------------------- */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable(value = "id") Long id) {
         Course course = courseService.getCourse(id);
@@ -89,5 +118,15 @@ public class CourseController {
         courseService.deleteCourse(course);
         return ResponseEntity.ok().build();
     }
-
+    /*------------------------------------ DELETE A SINGLE COURSE ----------------------------------- */
+    private File uploadFile(String type, MultipartFile file, Course course) throws IOException {
+        String path = "";
+        if(type.equals(FileTypes.IMAGE.name())){
+            path = course.getImageDirPath();
+        }else if(type.equals(FileTypes.VIDEO.name())){
+            path = course.getTrailerVideoDirPath();
+        }
+        fileService.setPath(path);
+        return fileService.createFile(file);
+    }
 }

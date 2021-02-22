@@ -53,9 +53,6 @@ public class AuthenticationController {
     @PostMapping("/signin/")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) throws Exception {
 
-        System.out.println("loginRequest username = " + loginRequest.getUsername());
-        System.out.println("loginRequest password = " + loginRequest.getPassword());
-
         //AUTHENTICATE THE USER
         Authentication authentication = authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
@@ -93,12 +90,12 @@ public class AuthenticationController {
     @PostMapping("/signup/")
     public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         if(applicationUserService.existsByUsername(signUpRequest.getUsername())) {
-            return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
+            return new ResponseEntity(new ApiResponse(HttpStatus.IM_USED, "Username is already taken!"),
                     HttpStatus.BAD_REQUEST);
         }
 
         if(applicationUserService.existsByEmail(signUpRequest.getEmail())) {
-            return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"),
+            return new ResponseEntity(new ApiResponse(HttpStatus.IM_USED, "Email Address already in use!"),
                     HttpStatus.BAD_REQUEST);
         }
 
@@ -123,7 +120,7 @@ public class AuthenticationController {
         //SAVE THE NEW USER AND RETURN IT'S DETAILS
         User result = applicationUserService.createUser(user);
 
-        return ResponseEntity.ok(new ApiResponse(true, "teacher" + user.getUsername() +"registered successfully"));
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "teacher" + user.getUsername() +"registered successfully"));
     }
 
 

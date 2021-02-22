@@ -5,8 +5,13 @@ import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,8 +38,14 @@ public class CourseService {
         return course;
     }
 
-    public List<Course> getAllCourses(){
-        return this.courseDAO.findAll();
+    public List<Course> getAllCourses(Integer pageNo, Integer pageSize){
+        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("created_at"));
+        Page<Course> pagedResult = (Page<Course>) this.courseDAO.findAll(paging);
+        if(pagedResult.hasContent()) {
+            return pagedResult.getContent();
+        } else {
+            return new ArrayList<Course>();
+        }
     }
 
     public void deleteCourse(Course course){

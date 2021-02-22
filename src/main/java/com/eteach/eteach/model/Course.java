@@ -1,6 +1,7 @@
 package com.eteach.eteach.model;
 
 
+import com.eteach.eteach.config.UserDataConfig;
 import com.eteach.eteach.enums.Rating;
 import com.eteach.eteach.enums.Subjects;
 import com.eteach.eteach.enums.Grade;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -42,18 +44,12 @@ public class Course implements Serializable {
     @Column(nullable = false)
     private float price;
 
-    @Column(nullable = false, length = 11)
-    private String trailer_video;
-
     @NotBlank
     @Column(nullable = false, length = 80)
     private String duration;
 
     @Column(nullable = false, length = 11)
     private String intro;
-
-    @Column(nullable = false, length = 100)
-    private String image;
 
     @Column(nullable = false, length = 50)
     private Grade grade;
@@ -90,6 +86,16 @@ public class Course implements Serializable {
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     private List<Section> sections;
 
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "trailer_video_id", referencedColumnName = "id")
+    private File trailer_video;
+
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
+    private File thumbnail;
+
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.SUBSELECT)
     private List<RatingInstance> ratings;
@@ -98,24 +104,32 @@ public class Course implements Serializable {
     @JoinColumn(name = "teacher_id", referencedColumnName = "id", nullable=false, unique=true)
     private TeacherAccount teacher_account;
 
+    private final transient UserDataConfig userDataConfig;
+
     public Course() { }
 
-    public Course(@JsonProperty("id")Long id, @JsonProperty("name") String name,
-                  @JsonProperty("description") String description, @JsonProperty("price") float price,
-                  @JsonProperty("trailer_video") String trailer_video, @JsonProperty("duration") String duration,
-                  @JsonProperty("intro") String intro, @JsonProperty("image")String image,
-                  @JsonProperty("grade") Grade grade, @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
-                  @JsonProperty("students_number") int students_number, @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level,
-                  @JsonProperty("rating") Rating rating, @JsonProperty("rating_number") int ratings_number,
+    @Autowired
+    public Course(UserDataConfig userDataConfig) {
+        this.userDataConfig = userDataConfig;
+    }
+
+    public Course(@JsonProperty("name") String name,
+                  @JsonProperty("description") String description,
+                  @JsonProperty("price") float price,
+                  @JsonProperty("duration") String duration,
+                  @JsonProperty("intro") String intro,
+                  @JsonProperty("grade") Grade grade,
+                  @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
+                  @JsonProperty("students_number") int students_number,
+                  @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level,
+                  @JsonProperty("rating") Rating rating,
+                  @JsonProperty("rating_number") int ratings_number,
                   @JsonProperty("category") Subjects category){
-        this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
-        this.trailer_video = trailer_video;
         this.duration = duration;
         this.intro = intro;
-        this.image = image;
         this.grade = grade;
         this.what_yow_will_learn = what_yow_will_learn;
         this.students_number = students_number;
@@ -127,6 +141,7 @@ public class Course implements Serializable {
 
     }
 
+    /*------------------------------------ GETTERS AND SETTERS ---------------------------------------*/
     public List<Section> getSections() {
         return sections;
     }
@@ -175,11 +190,11 @@ public class Course implements Serializable {
         this.price = price;
     }
 
-    public String getTrailer_video() {
+    public File getTrailer_video() {
         return trailer_video;
     }
 
-    public void setTrailer_video(String trailer_video) {
+    public void setTrailer_video(File trailer_video) {
         this.trailer_video = trailer_video;
     }
 
@@ -199,12 +214,12 @@ public class Course implements Serializable {
         this.intro = intro;
     }
 
-    public String getImage() {
-        return image;
+    public File getThumbnail() {
+        return thumbnail;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setThumbnail(File thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public Grade getGrade() {
@@ -287,11 +302,33 @@ public class Course implements Serializable {
         this.updated_at = updated_at;
     }
 
+    /* ---------------------------- PATHS TO PERSIST DATA IN FILESYSTEM ----------------------------------------*/
     @Transient
-    public String getTrailerVideoPath() {
-        if (trailer_video == null || id == null) return null;
-        return "/videos/" + id + "/" + trailer_video;
+    public String getTrailerVideoDirPath() {
+        String coursePath = prepareCoursePathes();
+        String trailerVideoPath = new StringBuilder(coursePath)
+                .append("trailer")
+                .append(java.io.File.separator).toString();
+        return trailerVideoPath;
     }
+
+    @Transient
+    public String getImageDirPath() {
+        String coursePath = prepareCoursePathes();
+        String imagepath = new StringBuilder(coursePath)
+                .append("images")
+                .append(java.io.File.separator).toString();
+        return imagepath;
+    }
+
+    private String prepareCoursePathes(){
+        String path = new StringBuilder(userDataConfig.getCoursesDirectory())
+                .append(java.io.File.separator)
+                .append(id)
+                .append(java.io.File.separator).toString();
+        return path;
+    }
+
 
 
 }
