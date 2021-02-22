@@ -3,6 +3,7 @@ package com.eteach.eteach.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import com.eteach.eteach.security.rolesandpermessions.Role;
@@ -23,32 +24,28 @@ public class User implements Serializable {
     @Column(name = "user_id", unique = true, nullable = false)
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false, length = 50)
-    private String first_name;
-
-    @NotBlank
-    @Column(nullable = false, length = 50)
-    private String second_name;
-
-    @NotBlank
-    @Column(nullable = false, length = 50)
+    @NotBlank(message = "username cannot be empty")
+    @Column(length = 50)
     private String username;
 
-    @NotBlank
-    @Column(nullable = false, length = 80)
+    @NotBlank(message = "Email cannot be empty")
+    @Column(length = 80)
+    @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank
-    @Column(nullable = false, length = 80)
+    @NotBlank(message = "password cannot be empty")
+    @Column(length = 80)
     private String password;
 
-    @Column(nullable = false, length = 11)
+    @NotBlank(message = "phone number cannot be empty")
+    @Column(length = 11)
     private String phone_number;
 
-    private boolean enabled;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
+    private Account account;
 
-    private boolean tokenExpired;
+    private boolean enabled;
 
     private Role role;
 
@@ -59,21 +56,11 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public User(String first_name, String second_name,String username, String email, String password, String phone_number) {
-        this.first_name = first_name;
-        this.second_name = second_name;
+    public User(@JsonProperty("username") String username,
+                @JsonProperty("email") String email,
+                @JsonProperty("password") String password,
+                @JsonProperty("phone_number") String phone_number){
         this.username = username;
-        this.email = email;
-        this.password = password;
-        this.phone_number = phone_number;
-    }
-
-    public User(@JsonProperty("id")Long id, @JsonProperty("first_name") String first_name,
-                @JsonProperty("second_name") String second_name, @JsonProperty("email") String email,
-                @JsonProperty("password") String password, @JsonProperty("phone_number") String phone_number){
-        this.id = id;
-        this.first_name = first_name;
-        this.second_name = second_name;
         this.email = email;
         this.password = password;
         this.phone_number = phone_number;
@@ -86,22 +73,6 @@ public class User implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getFirst_name() {
-        return first_name;
-    }
-
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
-    }
-
-    public String getSecond_name() {
-        return second_name;
-    }
-
-    public void setSecond_name(String second_name) {
-        this.second_name = second_name;
     }
 
     public String getUsername() {
@@ -153,4 +124,12 @@ public class User implements Serializable {
     }
 
     public Set<SimpleGrantedAuthority> getPermissions(){ return this.role.getGrantedAuthorities();}
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
 }

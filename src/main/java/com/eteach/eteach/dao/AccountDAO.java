@@ -1,11 +1,9 @@
 package com.eteach.eteach.dao;
 
-
-import com.eteach.eteach.model.TeacherAccount;
+import com.eteach.eteach.model.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository("teacherdaoimp")
-public interface TeacherDAO extends AccountDAO<TeacherAccount> {
-
+@Repository
+public interface AccountDAO<T extends Account> extends JpaRepository<T, Long> {
 }

@@ -108,24 +108,19 @@ public class FakeApplicationUserDao implements ApplicationUserDao {
     /*-------------------------------------- GET SOME FAKE USERS -----------------------------------------*/
     private List<User> getFakeUsers() {
         List<User> users = Lists.newArrayList(
-                new User("mohamed",
-                        "bendary",
+                new User(
                         "bendary577",
                         "bendary@gmail.com",
                         "password",
                         "0119348473"
                 ),
                 new User(
-                        "mohamed",
-                        "bendary",
                         "bendary577",
                         "bendary@gmail.com",
                         "password",
                         "0119348473"
                 ),
                 new User(
-                        "mohamed",
-                        "bendary",
                         "bendary577",
                         "bendary@gmail.com",
                         "password",

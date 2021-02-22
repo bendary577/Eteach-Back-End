@@ -1,5 +1,8 @@
 package com.eteach.eteach.api;
 
+import com.eteach.eteach.enums.AccountType;
+import com.eteach.eteach.model.StudentAccount;
+import com.eteach.eteach.model.TeacherAccount;
 import com.eteach.eteach.model.User;
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.http.ApiResponse;
@@ -8,6 +11,7 @@ import com.eteach.eteach.http.LoginRequest;
 import com.eteach.eteach.http.SignUpRequest;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
+import com.eteach.eteach.model.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +50,7 @@ public class AuthenticationController {
     }
 
     /*-------------------------------- SIGNIN -------------------------------------------*/
-    @PostMapping("/signin")
+    @PostMapping("/signin/")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) throws Exception {
 
         System.out.println("loginRequest username = " + loginRequest.getUsername());
@@ -86,7 +90,7 @@ public class AuthenticationController {
     }
 
     /*--------------------------------SIGNUP-------------------------------------------*/
-    @PostMapping("/signup")
+    @PostMapping("/signup/")
     public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         if(applicationUserService.existsByUsername(signUpRequest.getUsername())) {
             return new ResponseEntity(new ApiResponse(false, "Username is already taken!"),
@@ -98,21 +102,23 @@ public class AuthenticationController {
                     HttpStatus.BAD_REQUEST);
         }
 
-        System.out.println("signUpRequest fname= " + signUpRequest.getFirst_name());
-        System.out.println("signUpRequest sname= " + signUpRequest.getSecond_name());
-        System.out.println("signUpRequest uname= " + signUpRequest.getUsername());
-        System.out.println("signUpRequest email= " + signUpRequest.getEmail());
-        System.out.println("signUpRequest password= " + signUpRequest.getPassword());
-        System.out.println("signUpRequest password= " + signUpRequest.getPhone_number());
-
         //CREATE NEW USER INSTANCE
-        User user = new User(signUpRequest.getFirst_name(), signUpRequest.getSecond_name(), signUpRequest.getUsername(),
-                signUpRequest.getEmail(), passwordEncoder.encode(signUpRequest.getPassword()), signUpRequest.getPhone_number());
+        User user = new User(signUpRequest.getUsername(),
+                             signUpRequest.getEmail(),
+                             passwordEncoder.encode(signUpRequest.getPassword()),
+                             signUpRequest.getPhone_number());
 
         //SET USER ROLE
         user.setRole(TEACHER);
 
-        //CREATE NEW TEACHER PROFILE
+        //CREATE NEW PROFILE
+        Account account = null;
+        if(signUpRequest.getAccountType().equals(AccountType.STUDENT)){
+            account = new TeacherAccount();
+        }else if(signUpRequest.getAccountType().equals(AccountType.TEACHER)){
+            account = new StudentAccount();
+        }
+        user.setAccount(account);
 
         //SAVE THE NEW USER AND RETURN IT'S DETAILS
         User result = applicationUserService.createUser(user);

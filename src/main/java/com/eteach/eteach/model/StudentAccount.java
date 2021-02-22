@@ -11,7 +11,9 @@ import java.io.Serializable;
 @Entity
 @Table(name="student_account")
 @EntityListeners(AuditingEntityListener.class)
-public class StudentAccount implements Serializable {
+@DiscriminatorValue("student_account")
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+public class StudentAccount extends Account implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
@@ -28,13 +30,12 @@ public class StudentAccount implements Serializable {
 
     public StudentAccount() { }
 
-    public StudentAccount(@JsonProperty("id")Long id, @JsonProperty("address") String address,
-                          @JsonProperty("grade")Grade grade, @JsonProperty("image") String image){
-        this.id = id;
+    public StudentAccount(@JsonProperty("address")String address,
+                          @JsonProperty("grade")Grade grade,
+                          @JsonProperty("image")String image){
         this.address = address;
         this.grade = grade;
         this.image = image;
-
     }
 
     public Long getId() {

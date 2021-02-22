@@ -10,26 +10,28 @@ import java.util.List;
 @Entity
 @Table(name="teacher_account")
 @EntityListeners(AuditingEntityListener.class)
-public class TeacherAccount implements Serializable {
+@DiscriminatorValue("teacher_account")
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+public class TeacherAccount extends Account implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String about_description;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String image;
 
     @Column(nullable = false, length = 100)
     @Enumerated(EnumType.ORDINAL)
     private Subjects subject;
 
-    @Column(nullable = false, length = 100)
+    @Column
     private String facebook_link;
 
-    @Column(nullable = false, length = 100)
+    @Column
     private String twitter_link;
 
     @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
@@ -37,10 +39,11 @@ public class TeacherAccount implements Serializable {
 
     public TeacherAccount() { }
 
-    public TeacherAccount(@JsonProperty("id")Long id, @JsonProperty("address") String about_description,
-                          @JsonProperty("grade")String image, @JsonProperty("image") Subjects subject,
-                          @JsonProperty("facebook_link") String facebook_link, @JsonProperty("twitter_link") String twitter_link){
-        this.id = id;
+    public TeacherAccount(@JsonProperty("address") String about_description,
+                          @JsonProperty("grade")String image,
+                          @JsonProperty("image") Subjects subject,
+                          @JsonProperty("facebook_link") String facebook_link,
+                          @JsonProperty("twitter_link") String twitter_link){
         this.about_description = about_description;
         this.image = image;
         this.subject = subject;
