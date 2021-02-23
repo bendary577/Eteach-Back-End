@@ -4,6 +4,7 @@ import com.eteach.eteach.model.File;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository("filedaoimp")
-public interface FileDAO extends JpaRepository<File, Long> {
+@Repository
+public interface FileDAO<T extends File> extends JpaRepository<T, Long> {
+
 }

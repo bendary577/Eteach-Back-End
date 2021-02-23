@@ -16,7 +16,6 @@ public abstract class Account {
     @OneToOne(mappedBy = "account")
     private User user;
 
-
     public void setId(Long id) {
         this.id = id;
     }

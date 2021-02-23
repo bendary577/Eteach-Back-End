@@ -2,13 +2,15 @@ package com.eteach.eteach.model;
 
 import com.eteach.eteach.enums.Subjects;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name="teacher_account")
+@Table(name="teacher_accounts")
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("teacher_account")
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
@@ -24,7 +26,7 @@ public class TeacherAccount extends Account implements Serializable {
     @Column(length = 50)
     private String image;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     @Enumerated(EnumType.ORDINAL)
     private Subjects subject;
 
@@ -34,7 +36,8 @@ public class TeacherAccount extends Account implements Serializable {
     @Column
     private String twitter_link;
 
-    @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
     private List<Course> courses;
 
     public TeacherAccount() { }

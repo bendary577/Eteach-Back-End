@@ -23,7 +23,7 @@ import java.util.List;
 
 
 @Entity
-@Table(name="course")
+@Table(name="courses")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
 public class Course implements Serializable {
@@ -83,28 +83,27 @@ public class Course implements Serializable {
     @LastModifiedDate
     private Date updated_at;
 
-    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
     private List<Section> sections;
-
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "trailer_video_id", referencedColumnName = "id")
-    private File trailer_video;
-
+    private Video trailer_video;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
-    private File thumbnail;
+    private Image thumbnail;
 
-    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     private List<RatingInstance> ratings;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id", referencedColumnName = "id", nullable=false, unique=true)
+    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
     private TeacherAccount teacher_account;
 
-    private final transient UserDataConfig userDataConfig;
+    private transient UserDataConfig userDataConfig = null;
 
     public Course() { }
 
@@ -190,11 +189,11 @@ public class Course implements Serializable {
         this.price = price;
     }
 
-    public File getTrailer_video() {
+    public Video getTrailer_video() {
         return trailer_video;
     }
 
-    public void setTrailer_video(File trailer_video) {
+    public void setTrailer_video(Video trailer_video) {
         this.trailer_video = trailer_video;
     }
 
@@ -214,11 +213,11 @@ public class Course implements Serializable {
         this.intro = intro;
     }
 
-    public File getThumbnail() {
+    public Image getThumbnail() {
         return thumbnail;
     }
 
-    public void setThumbnail(File thumbnail) {
+    public void setThumbnail(Image thumbnail) {
         this.thumbnail = thumbnail;
     }
 
@@ -313,7 +312,7 @@ public class Course implements Serializable {
     }
 
     @Transient
-    public String getImageDirPath() {
+    public String getThumbnailDirPath() {
         String coursePath = prepareCoursePathes();
         String imagepath = new StringBuilder(coursePath)
                 .append("images")

@@ -3,6 +3,8 @@ package com.eteach.eteach.model;
 import com.eteach.eteach.enums.LevelOfDifficulty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name="quiz")
+@Table(name="quizzes")
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
         allowGetters = true)
@@ -49,12 +51,13 @@ public class Quiz implements Serializable {
     @LastModifiedDate
     private Date updatedAt;
 
-    @OneToMany(mappedBy="quiz",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy="quiz",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
     private List<Question> questions;
 
     public Quiz() { }
 
-    public Quiz(@JsonProperty("id")Long id, @JsonProperty("title")String title, @JsonProperty("difficult_level")LevelOfDifficulty difficulty_level,  @JsonProperty("questions_number")int questions_number,  @JsonProperty("final_grade")int final_grade) {
+    public Quiz(@JsonProperty("title")String title, @JsonProperty("difficult_level")LevelOfDifficulty difficulty_level,  @JsonProperty("questions_number")int questions_number,  @JsonProperty("final_grade")int final_grade) {
         this.id = id;
         this.title = title;
         this.difficulty_level = difficulty_level;
@@ -62,6 +65,67 @@ public class Quiz implements Serializable {
         this.final_grade = final_grade;
     }
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public LevelOfDifficulty getDifficulty_level() {
+        return difficulty_level;
+    }
+
+    public void setDifficulty_level(LevelOfDifficulty difficulty_level) {
+        this.difficulty_level = difficulty_level;
+    }
+
+    public int getQuestions_number() {
+        return questions_number;
+    }
+
+    public void setQuestions_number(int questions_number) {
+        this.questions_number = questions_number;
+    }
+
+    public int getFinal_grade() {
+        return final_grade;
+    }
+
+    public void setFinal_grade(int final_grade) {
+        this.final_grade = final_grade;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<Question> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(List<Question> questions) {
+        this.questions = questions;
+    }
 }

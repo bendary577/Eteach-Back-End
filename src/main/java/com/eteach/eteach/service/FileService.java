@@ -1,8 +1,12 @@
 package com.eteach.eteach.service;
 
 import com.eteach.eteach.dao.FileDAO;
+import com.eteach.eteach.dao.ImageDAO;
+import com.eteach.eteach.dao.VideoDAO;
 import com.eteach.eteach.exception.FileStorageException;
 import com.eteach.eteach.model.File;
+import com.eteach.eteach.model.Image;
+import com.eteach.eteach.model.Video;
 import com.eteach.eteach.utils.FileStorageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +24,20 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class FileService {
 
-
     private FileDAO fileDAO;
+    private VideoDAO videoDAO;
+    private ImageDAO imageDAO;
     private FileStorageUtil fileStorageUtil;
     private String path;
 
     @Autowired
-    public FileService(FileDAO fileDAO, FileStorageUtil fileStorageUtil){
+    public FileService(FileDAO fileDAO,
+                       VideoDAO videoDAO,
+                       ImageDAO imageDAO,
+                       FileStorageUtil fileStorageUtil){
         this.fileDAO = fileDAO;
+        this.videoDAO = videoDAO;
+        this.imageDAO = imageDAO;
         this.fileStorageUtil = fileStorageUtil;
     }
 
@@ -44,7 +54,7 @@ public class FileService {
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ioe) {
-            throw new FileStorageException("Could not save image file: " + fileName);
+            throw new FileStorageException("Could not save file: " + fileName);
         }
     }
 
@@ -53,17 +63,29 @@ public class FileService {
         return fileStorageUtil.getFile(path);
     }
 
-    /*--------------------------- CREATE NEW FILE OBJECT IN DATABASE ----------------------------------*/
+    /*--------------------------- CREATE NEW Video OBJECT IN DATABASE ----------------------------------*/
     @Transactional
-    public File createFile(MultipartFile multipartFile) throws IOException {
-        File file = new File();
+    public Video createVideoFile(MultipartFile multipartFile) throws IOException {
+        Video video = new Video();
         String fileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
-        file.setName(fileName);
+        video.setName(fileName);
         //file.setExtension(FilenameUtils.getExtension(file.getName()));
         //SAVE FILE IN FILE SYSTEM
         saveFileInFileSystem(fileName, multipartFile);
-        file.setPath(path);
-        return fileDAO.save(file);
+        video.setPath(path);
+        return videoDAO.save(video);
+    }
+    /*--------------------------- CREATE NEW Image OBJECT IN DATABASE ----------------------------------*/
+    @Transactional
+    public Image createImageFile(MultipartFile multipartFile) throws IOException {
+        Image image = new Image();
+        String fileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
+        image.setName(fileName);
+        //file.setExtension(FilenameUtils.getExtension(file.getName()));
+        //SAVE FILE IN FILE SYSTEM
+        saveFileInFileSystem(fileName, multipartFile);
+        image.setPath(path);
+        return imageDAO.save(image);
     }
 
     /*----------------------------- GET FILE OBJECT FROM DATABASE -------------------------------------*/

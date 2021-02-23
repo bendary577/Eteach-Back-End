@@ -1,6 +1,8 @@
 package com.eteach.eteach.model;;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -8,7 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name="section")
+@Table(name="sections")
 @EntityListeners(AuditingEntityListener.class)
 public class Section implements Serializable {
     @Id
@@ -21,6 +23,7 @@ public class Section implements Serializable {
     private String title;
 
     @OneToMany(mappedBy="section",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)
     private List<Lesson> lessons;
 
     @ManyToOne(fetch = FetchType.LAZY)

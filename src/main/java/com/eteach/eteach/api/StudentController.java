@@ -40,7 +40,7 @@ public class StudentController {
         String fileName = StringUtils.cleanPath(image.getOriginalFilename());
         studentAccount.setImage(fileName);
         String imageUploadDirectory = "user-photos/" + studentAccount.getId();
-        FileUpload.saveFile(imageUploadDirectory, fileName, image);
+       // FileUpload.saveFile(imageUploadDirectory, fileName, image);
         this.accountService.createStudent(studentAccount);
         return "saved";
     }

@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 
 @Entity
-@Table(name="student_account")
+@Table(name="student_accounts")
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("student_account")
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
@@ -19,13 +19,13 @@ public class StudentAccount extends Account implements Serializable {
     @Column(unique = true, nullable = false)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String address;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private Grade grade;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String image;
 
     public StudentAccount() { }

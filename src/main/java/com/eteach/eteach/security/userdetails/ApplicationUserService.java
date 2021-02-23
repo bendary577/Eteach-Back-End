@@ -17,7 +17,7 @@ public class ApplicationUserService implements UserDetailsService {
     private final RealApplicationUserDao applicationUserDao;
 
     @Autowired
-    public ApplicationUserService(@Qualifier("realuserdaoimp") RealApplicationUserDao applicationUserDao) {
+    public ApplicationUserService(RealApplicationUserDao applicationUserDao) {
         this.applicationUserDao = applicationUserDao;
     }
 

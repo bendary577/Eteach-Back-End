@@ -1,6 +1,8 @@
 package com.eteach.eteach.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -8,10 +10,11 @@ import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name="lesson")
+@Table(name="lessons")
 @EntityListeners(AuditingEntityListener.class)
 public class Lesson implements Serializable {
     @Id
+
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long id;
@@ -26,36 +29,29 @@ public class Lesson implements Serializable {
 
     @NotBlank
     @Column(nullable = false, length = 100)
-    private String video;
-
-    public List<Material> getMaterials() {
-        return materials;
-    }
-
-    public void setMaterials(List<Material> materials) {
-        this.materials = materials;
-    }
-
-    @NotBlank
-    @Column(nullable = false, length = 100)
     private String video_duration;
 
-    @OneToMany(mappedBy="lesson",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "video_id", referencedColumnName = "id")
+    private Video video;
+
+    @OneToMany(mappedBy="lesson",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
     private List<Material> materials;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "section_id", referencedColumnName = "id")
     private Section section;
 
     public Lesson() { }
 
-    public Lesson(@JsonProperty("id")Long id, @JsonProperty("title") String title,
-                  @JsonProperty("description")String description, @JsonProperty("video") String video,
+    public Lesson(@JsonProperty("id")Long id,
+                  @JsonProperty("title") String title,
+                  @JsonProperty("description")String description,
                   @JsonProperty("video_duration")String video_duration){
         this.id = id;
         this.title = title;
         this.description = description;
-        this.video = video;
         this.video_duration = video_duration;
     }
 
@@ -83,11 +79,11 @@ public class Lesson implements Serializable {
         this.description = description;
     }
 
-    public String getVideo() {
+    public Video getVideo() {
         return video;
     }
 
-    public void setVideo(String video) {
+    public void setVideo(Video video) {
         this.video = video;
     }
 
@@ -106,4 +102,13 @@ public class Lesson implements Serializable {
     public void setSection(Section section) {
         this.section = section;
     }
+
+    public List<Material> getMaterials() {
+        return materials;
+    }
+
+    public void setMaterials(List<Material> materials) {
+        this.materials = materials;
+    }
+
 }

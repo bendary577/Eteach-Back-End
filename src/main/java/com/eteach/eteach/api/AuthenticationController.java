@@ -105,15 +105,15 @@ public class AuthenticationController {
                              passwordEncoder.encode(signUpRequest.getPassword()),
                              signUpRequest.getPhone_number());
 
-        //SET USER ROLE
-        user.setRole(TEACHER);
 
         //CREATE NEW PROFILE
         Account account = null;
         if(signUpRequest.getAccountType().equals(AccountType.STUDENT)){
             account = new TeacherAccount();
+            user.setRole(TEACHER);
         }else if(signUpRequest.getAccountType().equals(AccountType.TEACHER)){
             account = new StudentAccount();
+            user.setRole(STUDENT);
         }
         user.setAccount(account);
 

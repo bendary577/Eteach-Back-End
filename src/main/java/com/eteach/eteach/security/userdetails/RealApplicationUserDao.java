@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
-@Repository("realuserdaoimp")
+@Repository
 public interface RealApplicationUserDao extends JpaRepository<User, Long> {
 
     Optional<User> findUserByUsername(String username);
