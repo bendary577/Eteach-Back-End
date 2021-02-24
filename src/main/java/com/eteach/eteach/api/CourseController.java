@@ -1,11 +1,12 @@
 package com.eteach.eteach.api;
-import com.eteach.eteach.enums.FileTypes;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.http.ApiResponse;
+import com.eteach.eteach.http.SubscribeToCourseRequest;
 import com.eteach.eteach.model.Course;
-import com.eteach.eteach.model.File;
 import com.eteach.eteach.model.Image;
+import com.eteach.eteach.model.StudentAccount;
 import com.eteach.eteach.model.Video;
+import com.eteach.eteach.service.AccountService;
 import com.eteach.eteach.service.CourseService;
 import com.eteach.eteach.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +28,15 @@ public class CourseController {
 
     private final CourseService courseService;
     private final FileService fileService;
+    private final AccountService accountService;
 
     @Autowired
-    public CourseController(CourseService courseService, FileService fileService) {
+    public CourseController(CourseService courseService,
+                            FileService fileService,
+                            AccountService accountService) {
         this.courseService = courseService;
         this.fileService = fileService;
+        this.accountService = accountService;
     }
 
     /*------------------------------------ SAVE A NEW COURSE ---------------------------------------------- */
@@ -95,6 +100,7 @@ public class CourseController {
     @GetMapping("/")
     public List<Course> getAllCourses(@RequestParam(defaultValue = "0") Integer pageNo,
                                       @RequestParam(defaultValue = "10") Integer pageSize) {
+        System.out.println("i'm here with ROLE_TEACHER");
         return courseService.getAllCourses(pageNo, pageSize);
     }
 
@@ -108,13 +114,25 @@ public class CourseController {
     /*------------------------------------ RATE A COURSE ------------------------------------- */
     @PreAuthorize("hasRole('ROLE_STUDENT')")
     @PutMapping("rate/{id}")
-    public Course rateCourse(@PathVariable(value = "id") Long id,
+    public void rateCourse(@PathVariable(value = "id") Long id,
                              @Valid @RequestBody Course newCourse) {
-        Course oldCourse = courseService.getCourse(id);
-        if (oldCourse == null) {
-            throw new ResourceNotFoundException("Course", "id", id);
-        }
-        return courseService.updateCourse(oldCourse, newCourse);
+        System.out.println("rate course");
+    }
+
+    /*------------------------------------ SUBSCRIBE TO A COURSE ------------------------------------- */
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    @PutMapping("subscribe/{id}")
+    public ResponseEntity<?> subscribeToCourse(@PathVariable(value = "id") Long id,
+                                  @Valid @RequestBody SubscribeToCourseRequest subscribeToCourseRequest) {
+        Long studentId = subscribeToCourseRequest.getStudentId();
+        Long courseId = subscribeToCourseRequest.getCourseId();
+        StudentAccount student = accountService.getStudent(studentId);
+        String studentUsername = student.getUser().getUsername();
+        Course course = courseService.getCourse(courseId);
+        String courseName = course.getName();
+        student.getCourses().add(course);
+        course.getStudents().add(student);
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "student" + studentUsername + "subscribed to course" + courseName + "successfully"));
     }
 
     /*------------------------------------ UPDATE COURSE INFO ------------------------------------- */

@@ -2,14 +2,12 @@ package com.eteach.eteach.security.userdetails;
 
 import com.eteach.eteach.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 
 @Service
 public class ApplicationUserService implements UserDetailsService {
@@ -26,7 +24,7 @@ public class ApplicationUserService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = applicationUserDao
-                .findUserByUsername(username)
+                .findByUsername(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format("Username %s not found", username)));
         return ApplicationUser.create(user);

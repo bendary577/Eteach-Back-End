@@ -26,8 +26,8 @@ public class SignUpRequest implements Serializable {
     @Size(min = 6, max = 20)
     private String phone_number;
 
-    @NotBlank
-    private AccountType accountType;
+    @NotNull
+    private int accountType;
 
     public String getPhone_number() {
         return phone_number;
@@ -61,11 +61,11 @@ public class SignUpRequest implements Serializable {
         this.password = password;
     }
 
-    public AccountType getAccountType() {
+    public int getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(AccountType accountType) {
+    public void setAccountType(int accountType) {
         this.accountType = accountType;
     }
 }

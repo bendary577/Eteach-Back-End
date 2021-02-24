@@ -108,10 +108,10 @@ public class AuthenticationController {
 
         //CREATE NEW PROFILE
         Account account = null;
-        if(signUpRequest.getAccountType().equals(AccountType.STUDENT)){
+        if(signUpRequest.getAccountType() == AccountType.STUDENT.getAccountCode()){
             account = new TeacherAccount();
             user.setRole(TEACHER);
-        }else if(signUpRequest.getAccountType().equals(AccountType.TEACHER)){
+        }else if(signUpRequest.getAccountType() == AccountType.TEACHER.getAccountCode()){
             account = new StudentAccount();
             user.setRole(STUDENT);
         }

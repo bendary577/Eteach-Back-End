@@ -10,17 +10,9 @@ import java.util.Optional;
 @Repository
 public interface RealApplicationUserDao extends JpaRepository<User, Long> {
 
-    Optional<User> findUserByUsername(String username);
+    Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
     Boolean existsByUsername(String username);
     Boolean existsByEmail(String email);
 
-    //Optional<ApplicationUser> findUserByUsername(String username);
-
-    //Optional<ApplicationUser> findUserById(Long id);
-
-    //@Query("SELECT u FROM User u WHERE u.email = :username")
-    //Optional<User> getUserByUsername(@Param("username") String username);
-
-    //@Query("SELECT u FROM User u WHERE u.email = :email")
-    //Optional<User> findUserByEmail(@Param("email")String email);
 }
