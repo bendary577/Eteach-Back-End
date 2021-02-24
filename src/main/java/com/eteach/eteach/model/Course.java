@@ -19,7 +19,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -58,8 +60,11 @@ public class Course implements Serializable {
     @Column(nullable = false, length = 50)
     private String what_yow_will_learn;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private int students_number;
+
+    @Column(nullable = false)
+    private int lessons_number;
 
     @Column(nullable = false, length = 100)
     private LevelOfDifficulty difficulty_level;
@@ -102,6 +107,17 @@ public class Course implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
     private TeacherAccount teacher_account;
+
+    @ManyToMany(mappedBy = "courses")
+    private Set<StudentAccount> students = new HashSet<>();
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "course_tag",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "tag_id") }
+    )
+    Set<Tag> tags = new HashSet<>();
 
     private transient UserDataConfig userDataConfig = null;
 
@@ -299,6 +315,38 @@ public class Course implements Serializable {
 
     public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
+    }
+
+    public TeacherAccount getTeacher_account() {
+        return teacher_account;
+    }
+
+    public void setTeacher_account(TeacherAccount teacher_account) {
+        this.teacher_account = teacher_account;
+    }
+
+    public Set<StudentAccount> getStudents() {
+        return students;
+    }
+
+    public void setStudents(Set<StudentAccount> students) {
+        this.students = students;
+    }
+
+    public int getLessons_number() {
+        return lessons_number;
+    }
+
+    public void setLessons_number(int lessons_number) {
+        this.lessons_number = lessons_number;
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        tags = tags;
     }
 
     /* ---------------------------- PATHS TO PERSIST DATA IN FILESYSTEM ----------------------------------------*/

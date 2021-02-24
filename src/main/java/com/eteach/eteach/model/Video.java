@@ -7,10 +7,6 @@ import javax.persistence.*;
 @Entity
 @Table(name="videos")
 public class Video extends File{
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false, updatable = false)
-    private String id;
 
     @JsonIgnore
     @Column
@@ -31,16 +27,6 @@ public class Video extends File{
 
     public Video(String name, String type) {
         super(name, type);
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getThumbnail_path() {
@@ -67,12 +53,10 @@ public class Video extends File{
         this.course = course;
     }
 
-    @Override
     public Lesson getLesson() {
         return lesson;
     }
 
-    @Override
     public void setLesson(Lesson lesson) {
         this.lesson = lesson;
     }

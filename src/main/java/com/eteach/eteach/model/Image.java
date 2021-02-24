@@ -5,25 +5,14 @@ import javax.persistence.*;
 @Entity
 @Table(name="images")
 public class Image extends File{
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(unique = true, updatable = false)
-    private String id;
 
     @OneToOne(mappedBy = "thumbnail")
     private Course course;
 
+    @OneToOne(mappedBy = "image")
+    private Question question;
+
     public Image() {
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(String id) {
-        this.id = id;
     }
 
     public Course getCourse() {
@@ -32,5 +21,13 @@ public class Image extends File{
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
     }
 }

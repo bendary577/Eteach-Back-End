@@ -5,29 +5,24 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 @MappedSuperclass
 public abstract class File {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(unique = true, updatable = false)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(updatable = false, nullable = false)
+    protected Long id;
 
-    @NotBlank
     @Column(length = 50)
     private String name;
 
-    @NotBlank
     @Column(length = 50)
     private String type;
 
-    @NotBlank
     @Column(length = 50)
     private String path;
 
-    @NotBlank
     @Column(length = 50)
     private String extension;
 
@@ -45,13 +40,6 @@ public abstract class File {
     @LastModifiedDate
     private Date updated_at;
 
-    @OneToOne
-    private Section section;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "lesson_id", referencedColumnName = "id")
-    private  Lesson lesson;
-
     public File() {
     }
 
@@ -60,7 +48,7 @@ public abstract class File {
         this.type = type;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
@@ -80,7 +68,7 @@ public abstract class File {
         this.type = type;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -124,11 +112,5 @@ public abstract class File {
         this.updated_at = updated_at;
     }
 
-    public Lesson getLesson() {
-        return lesson;
-    }
 
-    public void setLesson(Lesson lesson) {
-        this.lesson = lesson;
-    }
 }

@@ -40,6 +40,10 @@ public class TeacherAccount extends Account implements Serializable {
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Course> courses;
 
+    @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    private List<Quiz> quizzes;
+
     public TeacherAccount() { }
 
     public TeacherAccount(@JsonProperty("address") String about_description,
@@ -109,5 +113,13 @@ public class TeacherAccount extends Account implements Serializable {
 
     public void setTwitter_link(String twitter_link) {
         this.twitter_link = twitter_link;
+    }
+
+    public List<Quiz> getQuizzes() {
+        return quizzes;
+    }
+
+    public void setQuizzes(List<Quiz> quizzes) {
+        this.quizzes = quizzes;
     }
 }

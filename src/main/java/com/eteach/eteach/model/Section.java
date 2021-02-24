@@ -22,12 +22,15 @@ public class Section implements Serializable {
     @Column(nullable = false, length = 100)
     private String title;
 
+    @Column(nullable = false)
+    private int lessons_number;
+
     @OneToMany(mappedBy="section",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Lesson> lessons;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", referencedColumnName = "id")
+    @JoinColumn(name = "course_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Course course;
 
     public Section() { }
@@ -59,5 +62,21 @@ public class Section implements Serializable {
 
     public void setLessons(List<Lesson> lessons) {
         this.lessons = lessons;
+    }
+
+    public int getLessons_number() {
+        return lessons_number;
+    }
+
+    public void setLessons_number(int lessons_number) {
+        this.lessons_number = lessons_number;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
     }
 }

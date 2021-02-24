@@ -12,7 +12,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name="quizzes")
@@ -54,6 +56,13 @@ public class Quiz implements Serializable {
     @OneToMany(mappedBy="quiz",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Question> questions;
+
+    @ManyToMany(mappedBy = "quizzes")
+    private Set<StudentAccount> students = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    private TeacherAccount teacher_account;
 
     public Quiz() { }
 
@@ -127,5 +136,21 @@ public class Quiz implements Serializable {
 
     public void setQuestions(List<Question> questions) {
         this.questions = questions;
+    }
+
+    public Set<StudentAccount> getStudents() {
+        return students;
+    }
+
+    public void setStudents(Set<StudentAccount> students) {
+        this.students = students;
+    }
+
+    public TeacherAccount getTeacher_account() {
+        return teacher_account;
+    }
+
+    public void setTeacher_account(TeacherAccount teacher_account) {
+        this.teacher_account = teacher_account;
     }
 }

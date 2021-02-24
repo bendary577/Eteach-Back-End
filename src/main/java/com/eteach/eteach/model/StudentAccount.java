@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Entity
@@ -27,6 +29,24 @@ public class StudentAccount extends Account implements Serializable {
 
     @Column(length = 100)
     private String image;
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "student_course",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "course_id") }
+    )
+    Set<Course> courses = new HashSet<>();
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "student_quiz",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "quiz_id") }
+    )
+    Set<Quiz> quizzes = new HashSet<>();
+
+
 
     public StudentAccount() { }
 
@@ -68,6 +88,22 @@ public class StudentAccount extends Account implements Serializable {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public Set<Course> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(Set<Course> courses) {
+        this.courses = courses;
+    }
+
+    public Set<Quiz> getQuizzes() {
+        return quizzes;
+    }
+
+    public void setQuizzes(Set<Quiz> quizzes) {
+        this.quizzes = quizzes;
     }
 
     @Transient
