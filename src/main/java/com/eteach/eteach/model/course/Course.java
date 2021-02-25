@@ -358,10 +358,18 @@ public class Course implements Serializable {
         tags = tags;
     }
 
+    public List<Quiz> getQuizzes() {
+        return quizzes;
+    }
+
+    public void setQuizzes(List<Quiz> quizzes) {
+        this.quizzes = quizzes;
+    }
+
     /* ---------------------------- PATHS TO PERSIST DATA IN FILESYSTEM ----------------------------------------*/
     @Transient
     public String getTrailerVideoDirPath() {
-        String coursePath = prepareCoursePathes();
+        String coursePath = prepareCoursePaths();
         String trailerVideoPath = new StringBuilder(coursePath)
                 .append("trailer")
                 .append(java.io.File.separator).toString();
@@ -370,14 +378,14 @@ public class Course implements Serializable {
 
     @Transient
     public String getThumbnailDirPath() {
-        String coursePath = prepareCoursePathes();
+        String coursePath = prepareCoursePaths();
         String imagepath = new StringBuilder(coursePath)
                 .append("images")
                 .append(java.io.File.separator).toString();
         return imagepath;
     }
 
-    private String prepareCoursePathes(){
+    private String prepareCoursePaths(){
         String path = new StringBuilder(userDataConfig.getCoursesDirectory())
                 .append(java.io.File.separator)
                 .append(id)

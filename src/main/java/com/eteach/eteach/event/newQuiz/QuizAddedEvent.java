@@ -1,6 +1,5 @@
-package com.eteach.eteach.event;
+package com.eteach.eteach.event.newQuiz;
 
-import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.quiz.Quiz;
 import org.springframework.context.ApplicationEvent;
 
