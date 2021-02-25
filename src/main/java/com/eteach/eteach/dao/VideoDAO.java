@@ -1,6 +1,6 @@
 package com.eteach.eteach.dao;
 
-import com.eteach.eteach.model.Video;
+import com.eteach.eteach.model.file.Video;
 import org.springframework.stereotype.Repository;
 
 @Repository

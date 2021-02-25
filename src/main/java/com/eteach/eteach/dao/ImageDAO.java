@@ -1,6 +1,6 @@
 package com.eteach.eteach.dao;
 
-import com.eteach.eteach.model.Image;
+import com.eteach.eteach.model.file.Image;
 import org.springframework.stereotype.Repository;
 
 @Repository

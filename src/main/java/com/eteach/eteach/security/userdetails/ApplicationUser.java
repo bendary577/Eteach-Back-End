@@ -1,10 +1,9 @@
 package com.eteach.eteach.security.userdetails;
 
-import com.eteach.eteach.model.User;
+import com.eteach.eteach.model.account.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 

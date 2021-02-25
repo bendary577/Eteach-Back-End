@@ -2,7 +2,7 @@ package com.eteach.eteach.service;
 
 import com.eteach.eteach.dao.CourseDAO;
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.model.Course;
+import com.eteach.eteach.model.course.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;

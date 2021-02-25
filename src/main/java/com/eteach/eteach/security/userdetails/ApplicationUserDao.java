@@ -1,8 +1,6 @@
 package com.eteach.eteach.security.userdetails;
 
-import com.eteach.eteach.model.User;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.eteach.eteach.model.account.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;

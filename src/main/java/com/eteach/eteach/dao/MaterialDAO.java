@@ -1,5 +1,5 @@
 package com.eteach.eteach.dao;
-import com.eteach.eteach.model.Material;
+import com.eteach.eteach.model.file.Material;
 import org.springframework.stereotype.Repository;
 
 @Repository

@@ -1,6 +1,6 @@
 package com.eteach.eteach.dao;
 
-import com.eteach.eteach.model.StudentAccount;
+import com.eteach.eteach.model.account.StudentAccount;
 import org.springframework.stereotype.Repository;
 
 @Repository("studentdaoimp")

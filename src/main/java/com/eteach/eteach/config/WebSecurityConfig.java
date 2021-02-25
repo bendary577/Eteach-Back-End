@@ -2,7 +2,7 @@ package com.eteach.eteach.config;
 
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.jwt.JwtTokenVerifier;
-import com.eteach.eteach.security.JwtAuthenticationEntryPoint;
+import com.eteach.eteach.security.utils.JwtAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

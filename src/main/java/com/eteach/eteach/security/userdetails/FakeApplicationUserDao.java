@@ -1,6 +1,6 @@
 package com.eteach.eteach.security.userdetails;
 
-import com.eteach.eteach.model.User;
+import com.eteach.eteach.model.account.User;
 import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
