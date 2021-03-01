@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationListener;
 public class QuizAddedEventListener implements ApplicationListener<QuizAddedEvent> {
     @Override
     public void onApplicationEvent(QuizAddedEvent quizAddedEvent) {
-        QuizAddedEvent employeeEvent = (QuizAddedEvent) quizAddedEvent;
+        QuizAddedEvent newQuizEvent = (QuizAddedEvent) quizAddedEvent;
 
         //SEND A NOTIFICATION
 

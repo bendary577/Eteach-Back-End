@@ -1,4 +1,4 @@
-package com.eteach.eteach.http;
+package com.eteach.eteach.http.request;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;

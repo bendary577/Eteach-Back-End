@@ -1,8 +1,7 @@
 package com.eteach.eteach.jwt;
 
-import com.eteach.eteach.config.JwtConfig;
+import com.eteach.eteach.config.security.JwtConfig;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
-import com.google.common.base.Strings;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +46,7 @@ public class JwtTokenProvider {
     /*--------------------------------- EXTRACTS TOKEN FROM REQUEST --------------------------------------*/
     public String getJwtFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader(jwtConfig.getAuthorizationHeader());
-        System.out.println("auth header is :" + authHeader);
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            System.out.println("auth header starts with bearer");
             return authHeader.replace("Bearer ", "");
         }else{
             return null;
@@ -92,5 +89,11 @@ public class JwtTokenProvider {
             logger.error("JWT claims string is empty.");
         }
         return false;
+    }
+
+    /* ------------------------------------- INVALIDATE ACCESS TOKEN ----------------------------*/
+
+    public void invalidateRelatedTokens(String key) {
+        //RedisUtil.INSTANCE.srem(REDIS_SET_ACTIVE_SUBJECTS, (String) httpServletRequest.getAttribute("username"));
     }
 }

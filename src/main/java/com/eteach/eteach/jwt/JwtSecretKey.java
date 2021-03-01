@@ -1,6 +1,6 @@
 package com.eteach.eteach.jwt;
 
-import com.eteach.eteach.config.JwtConfig;
+import com.eteach.eteach.config.security.JwtConfig;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

@@ -1,8 +1,10 @@
 package com.eteach.eteach.api.notification;
 
-import com.eteach.eteach.http.LoginRequest;
+import com.eteach.eteach.http.request.LoginRequest;
+import com.eteach.eteach.model.quiz.Quiz;
 import com.eteach.eteach.notification.Notification;
 import com.eteach.eteach.notification.NotificationService;
+import com.eteach.eteach.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,20 +19,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class NotificationController {
 
     NotificationService notificationService;
+    QuizService quizService;
 
     @Autowired
-    public NotificationController(NotificationService notificationService){
+    public NotificationController(NotificationService notificationService,
+                                  QuizService quizService){
         this.notificationService = notificationService;
+        this.quizService = quizService;
     }
 
     //------------------------------- NEW QUIZ ADDED NOTIFICATION ----------------------------
-    @MessageMapping("/new-quiz/{quizId}")                 //message is sent from 'app/new-quiz'
-    @SendTo("/topic/new-quiz-added")                      //message is sent to all topic subscribers
-    public ResponseEntity<?> addNewQuizAction(@DestinationVariable Long quizId) {
-        //Send the notification to "UserA" (by username)
-        //notificationService.notifyAfterNewQuizAdded(new Notification("hello"), requestInfo.getUsername());
-        //Return an http 200 status code
-        return new ResponseEntity<>(HttpStatus.OK);
+    @MessageMapping("/new-quiz/{quizId}")            //message is sent from 'app/new-quiz'
+    @SendTo("/topic/new-quiz")                      //message is sent to all topic subscribers
+    public ResponseEntity<?> newQuizAddedNotification(@DestinationVariable Long quizId) {
+        //get the new added quiz
+        Quiz quiz = quizService.getQuiz(quizId);
+        String quizName = quiz.getTitle();
+        Notification notification = new Notification("");
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     //------------------------------- QUIZ RESULT NOTIFICATION ----------------------------
@@ -40,7 +46,7 @@ public class NotificationController {
         // Send the notification to "UserA" (by username)
         notificationService.notifyAfterQuizResult(new Notification("hello"), requestInfo.getUsername());
 
-        // Return an http 200 status code
+        //Return an http 200 status code
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -55,7 +61,6 @@ public class NotificationController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
-    //-------------------------------  ----------------------------
+    //------------------------------------  ----------------------------
 
 }

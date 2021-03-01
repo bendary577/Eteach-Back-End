@@ -1,7 +1,7 @@
 package com.eteach.eteach.api.rest;
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.http.ApiResponse;
-import com.eteach.eteach.http.SubscribeToCourseRequest;
+import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.http.request.SubscribeToCourseRequest;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.account.StudentAccount;
@@ -55,11 +55,11 @@ public class CourseController {
     public ResponseEntity<?> uploadCourseVideo(@PathVariable(value = "id") Long id,
                                                @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile video) throws IOException {
         Course course = courseService.getCourse(id);
-        String contentType = video.getContentType();
-        Long size = video.getSize();
         if (course == null) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "course not found"));
         }
+        String contentType = video.getContentType();
+        Long size = video.getSize();
         if (!fileService.validateVideoFile(contentType, size)) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "trailer video is not valid"));
         }

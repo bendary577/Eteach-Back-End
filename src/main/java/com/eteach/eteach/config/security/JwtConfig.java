@@ -1,4 +1,4 @@
-package com.eteach.eteach.config;
+package com.eteach.eteach.config.security;
 
 import com.google.common.net.HttpHeaders;
 import io.jsonwebtoken.security.Keys;

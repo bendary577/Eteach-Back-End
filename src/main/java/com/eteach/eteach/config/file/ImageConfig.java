@@ -1,4 +1,4 @@
-package com.eteach.eteach.config;
+package com.eteach.eteach.config.file;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;

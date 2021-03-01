@@ -29,9 +29,9 @@ public class NotificationService {
     //------------------------------- NOTIFY AFTER NEW QUIZ ADDED ---------------------------
     // Spring will automatically prepend "/user/" to destination => "/user/notify"
     public void notifyAfterNewQuizAdded(Notification notification, String username) {
-        Optional<User> applicaitonUser = userDao.findByUsername(username);
-        if(applicaitonUser.isPresent()){
-            User user = applicaitonUser.get();
+        Optional<User> applicationUser = userDao.findByUsername(username);
+        if(applicationUser.isPresent()){
+            User user = applicationUser.get();
             Account account = user.getAccount();
             account.getNotifications().add(notification);
         }

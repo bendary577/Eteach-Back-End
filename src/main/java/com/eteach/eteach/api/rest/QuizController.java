@@ -1,7 +1,7 @@
 package com.eteach.eteach.api.rest;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.http.ApiResponse;
+import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.quiz.Quiz;
 import com.eteach.eteach.service.CourseService;

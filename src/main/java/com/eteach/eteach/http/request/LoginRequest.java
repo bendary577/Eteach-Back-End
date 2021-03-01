@@ -1,12 +1,17 @@
-package com.eteach.eteach.jwt;
+package com.eteach.eteach.http.request;
 
-public class UsernameAndPasswordAuthenticationRequest {
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
+public class LoginRequest implements Serializable {
+
+    private static final long serialVersionUID = 5926468583005150707L;
+
+    @NotBlank
     private String username;
-    private String password;
 
-    public UsernameAndPasswordAuthenticationRequest() {
-    }
+    @NotBlank
+    private String password;
 
     public String getUsername() {
         return username;

@@ -1,4 +1,4 @@
-package com.eteach.eteach.config;
+package com.eteach.eteach.config.file;
 
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.context.properties.ConfigurationProperties;

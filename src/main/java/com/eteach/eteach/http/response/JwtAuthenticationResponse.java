@@ -1,4 +1,4 @@
-package com.eteach.eteach.http;
+package com.eteach.eteach.http.response;
 
 import org.springframework.security.core.GrantedAuthority;
 

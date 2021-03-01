@@ -1,7 +1,6 @@
 package com.eteach.eteach.utils;
 
-import com.eteach.eteach.config.UserDataConfig;
-import com.eteach.eteach.enums.FileTypes;
+import com.eteach.eteach.config.file.UserDataConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

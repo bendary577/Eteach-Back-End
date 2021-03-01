@@ -1,4 +1,4 @@
-package com.eteach.eteach.config;
+package com.eteach.eteach.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

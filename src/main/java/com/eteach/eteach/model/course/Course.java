@@ -1,7 +1,7 @@
 package com.eteach.eteach.model.course;
 
 
-import com.eteach.eteach.config.UserDataConfig;
+import com.eteach.eteach.config.file.UserDataConfig;
 import com.eteach.eteach.enums.Rating;
 import com.eteach.eteach.enums.Subjects;
 import com.eteach.eteach.enums.Grade;

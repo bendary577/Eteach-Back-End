@@ -1,4 +1,4 @@
-package com.eteach.eteach.config;
+package com.eteach.eteach.config.security;
 
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.jwt.JwtTokenVerifier;

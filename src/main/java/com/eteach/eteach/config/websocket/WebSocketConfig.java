@@ -1,4 +1,4 @@
-package com.eteach.eteach.config;
+package com.eteach.eteach.config.websocket;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -22,10 +22,10 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
         config.setUserDestinationPrefix("/secured/user");
     }
 
-    @Override
+    @Override             //STOMP is a Simple Text Orientated Messaging Protocol
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //HTTP URL for the endpoint to which a WebSocket (or SockJS)
         //client needs to connect for the WebSocket handshake.
-        registry.addEndpoint("/eteach").withSockJS();
+        registry.addEndpoint("/eteach.com-websockets").withSockJS();
     }
 }
