@@ -1,5 +1,6 @@
 package com.eteach.eteach.jwt;
 
+import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
     @Autowired
     private ApplicationUserService userDetailsService;
 
+
     @Autowired
     public JwtTokenVerifier(JwtTokenProvider jwtTokenProvider){
         this.jwtTokenProvider =jwtTokenProvider;
@@ -33,9 +35,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        System.out.println("request path is :" + path);
         if ("/api/v1/auth/signup/".equals(path) || "/api/v1/auth/signin/".equals(path)) {
-            System.out.println("sign up filter");
             filterChain.doFilter(request, response);
             return;
         }
@@ -44,11 +44,11 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
             String token = jwtTokenProvider.getJwtFromRequest(request);
             System.out.println("token is:" + token);
 
-            if (token != null || !jwtTokenProvider.validateJwtToken(token)) {
+            if (token != null || !jwtTokenProvider.validateJwtToken(token, request)) {
 
                 String username = jwtTokenProvider.getUserNameFromJwtToken(token);
 
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null || !jwtTokenProvider.isTokenInBlacklist(username)) {
                     UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails,

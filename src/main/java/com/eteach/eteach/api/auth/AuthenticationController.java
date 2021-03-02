@@ -9,6 +9,7 @@ import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.http.response.JwtAuthenticationResponse;
 import com.eteach.eteach.http.request.LoginRequest;
 import com.eteach.eteach.http.request.SignUpRequest;
+import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import com.eteach.eteach.model.account.Account;
@@ -22,10 +23,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import static com.eteach.eteach.security.rolesandpermessions.Role.*;
 
@@ -37,16 +36,19 @@ public class AuthenticationController {
     public final PasswordEncoder passwordEncoder;
     public final JwtTokenProvider JwtTokenProvider;
     public final ApplicationUserService applicationUserService;
+    public final RedisService redisService;
 
     @Autowired
     public AuthenticationController(AuthenticationManager authenticationManager,
                                    PasswordEncoder passwordEncoder,
                                    JwtTokenProvider JwtTokenProvider,
-                                   ApplicationUserService applicationUserService) {
+                                   ApplicationUserService applicationUserService,
+                                    RedisService redisService) {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.JwtTokenProvider = JwtTokenProvider;
         this.applicationUserService = applicationUserService;
+        this.redisService = redisService;
     }
 
     /*-------------------------------- SIGNIN -------------------------------------------*/
@@ -122,6 +124,32 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "teacher" + user.getUsername() +"registered successfully"));
     }
+
+    /*-------------------------------- SEND RESET PASSWORD LINK ------------------------------*/
+    @PostMapping("/password/resetlink")
+    public ResponseEntity<?> resetLink(@Valid @RequestBody String email) throws Exception {
+        User user = applicationUserService.getUserByemail(email);
+        if(user == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "user with this email is not found"));
+        }
+        //DELETE THE CURRENT TOKEN ASSIGNED WITH USER
+        redisService.deleteValue(user.getUsername());
+        //GENERATE NEW TOKEN
+        Authentication authentication = authenticate(user.getUsername(), user.getPassword());
+        String newJwtToken = JwtTokenProvider.generateToken(authentication);
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "Password reset link sent successfully"));
+    }
+
+    /*------------------------------ REFRESH TOKEN ---------------------------------------*/
+
+    @GetMapping("/refreshtoken")
+    public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+        ApplicationUser user = (ApplicationUser) request.getAttribute("user");
+        String refreshedToken = JwtTokenProvider.generateRefreshToken(user);
+        return ResponseEntity.ok(new JwtAuthenticationResponse(refreshedToken, user.getUsername(), user.getAuthorities()));
+    }
+
+
 
 
 

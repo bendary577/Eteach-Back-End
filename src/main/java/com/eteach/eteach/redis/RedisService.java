@@ -13,19 +13,22 @@ public class RedisService {
         this.redisTemplate = redisTemplate;
     }
 
-    public void saveValue(String username, Object obj) {
-        redisTemplate.opsForValue().set(username, obj.toString());
+    public void saveValue(String key, Object value) {
+        redisTemplate.opsForValue().set(key, value.toString());
     }
 
-    public synchronized Object getValue(String username) {
+    public synchronized Object getValue(String key) {
         redisTemplate.setHashValueSerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
-        return redisTemplate.opsForValue().get(username);
+        return redisTemplate.opsForValue().get(key);
     }
 
-    public void deleteValue(String username) {
-        redisTemplate.opsForValue().getOperations().delete(username);
+    public void deleteValue(String key) {
+        redisTemplate.opsForValue().getOperations().delete(key);
     }
 
+    public boolean isAvailable(String key){
+        return !(redisTemplate.opsForValue().get(key) == null);
+    }
 
 }

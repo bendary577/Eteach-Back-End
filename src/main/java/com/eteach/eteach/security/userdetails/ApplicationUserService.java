@@ -1,10 +1,13 @@
 package com.eteach.eteach.security.userdetails;
 
+import com.eteach.eteach.exception.UpdatePasswordException;
+import com.eteach.eteach.http.request.UpdatePasswordRequest;
 import com.eteach.eteach.model.account.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +18,15 @@ public class ApplicationUserService implements UserDetailsService {
     private final RealApplicationUserDao applicationUserDao;
 
     @Autowired
-    public ApplicationUserService(RealApplicationUserDao applicationUserDao) {
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public ApplicationUserService(RealApplicationUserDao applicationUserDao, PasswordEncoder passwordEncoder) {
         this.applicationUserDao = applicationUserDao;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /*-------------------------------------- GET USER BY USERNAME -----------------------------------------*/
+    /*-------------------------------------- LOAD USER BY USERNAME -----------------------------------------*/
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -30,6 +37,26 @@ public class ApplicationUserService implements UserDetailsService {
         return ApplicationUser.create(user);
 
     }
+
+    /*-------------------------------------- GET USER BY USERNAME -----------------------------------------*/
+    @Transactional
+    public User getUserByUsername(String username) throws UsernameNotFoundException {
+        User user = applicationUserDao
+                .findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(String.format("Username %s not found", username)));
+        return user;
+    }
+    /*-------------------------------------- GET USER BY EMAIL -----------------------------------------*/
+    @Transactional
+    public User getUserByemail(String username) throws UsernameNotFoundException {
+        User user = applicationUserDao
+                .findByEmail(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(String.format("Username %s not found", username)));
+        return user;
+    }
+
 
     /*-------------------------------------- CREATE NEW USER -----------------------------------------*/
     public User createUser(User user) {
@@ -63,6 +90,22 @@ public class ApplicationUserService implements UserDetailsService {
                 );
     }
     */
+    /*--------------------------- UPDATE USER PASSWORD ---------------------------------*/
+    public User updateUserPassword(User user, UpdatePasswordRequest updatePasswordRequest){
+        String oldPassword = updatePasswordRequest.getOldPassword();
+        String newPassword = updatePasswordRequest.getNewPassword();
+        if (!currentPasswordMatches(oldPassword, newPassword)) {
+            throw new UpdatePasswordException(user.getEmail(), "Invalid current password");
+        }
+         newPassword = passwordEncoder.encode(newPassword);
+         user.setPassword(newPassword);
+         applicationUserDao.save(user);
+         return user;
+    }
 
+    /*------------------------ CHECK IF OLD & NEW PASSWORDS MATCH -----------------------*/
+    private Boolean currentPasswordMatches(String oldPassword, String newPassword) {
+        return passwordEncoder.matches(oldPassword, newPassword);
+    }
 
 }

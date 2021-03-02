@@ -1,12 +1,17 @@
 package com.eteach.eteach.jwt;
 
 import com.eteach.eteach.config.security.JwtConfig;
+import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import io.jsonwebtoken.*;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +25,10 @@ public class JwtTokenProvider {
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
     private final JwtConfig jwtConfig;
     private final JwtSecretKey jwtSecretKey;
+
+
+    @Autowired
+    private RedisService redisService;
 
     @Autowired
     public JwtTokenProvider(JwtConfig jwtConfig, JwtSecretKey jwtSecretKey){
@@ -72,7 +81,7 @@ public class JwtTokenProvider {
     }
     */
     /*--------------------------------- CHECKS IF TOKEN IS VALID -----------------------------------*/
-    public boolean validateJwtToken(String token) {
+    public boolean validateJwtToken(String token, HttpServletRequest request) {
         try {
             Jws<Claims> jwtClaims = Jwts.parser().setSigningKey(jwtSecretKey.secretKey()).parseClaimsJws(token);
             System.out.println("claims :" + jwtClaims);
@@ -83,6 +92,15 @@ public class JwtTokenProvider {
             logger.error("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
             logger.error("Expired JWT token");
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            ApplicationUser user = (ApplicationUser) auth.getPrincipal();
+            String isRefreshToken = request.getHeader("isRefreshToken");
+            String requestURL = request.getRequestURL().toString();
+            // allow for Refresh Token creation if following conditions are true.
+            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
+                allowForRefreshToken(user, request);
+            } else
+                request.setAttribute("exception", ex);
         } catch (UnsupportedJwtException ex) {
             logger.error("Unsupported JWT token");
         } catch (IllegalArgumentException ex) {
@@ -92,8 +110,34 @@ public class JwtTokenProvider {
     }
 
     /* ------------------------------------- INVALIDATE ACCESS TOKEN ----------------------------*/
+    public void invalidateRelatedTokens(String username) {
+        redisService.deleteValue(username);
+    }
 
-    public void invalidateRelatedTokens(String key) {
-        //RedisUtil.INSTANCE.srem(REDIS_SET_ACTIVE_SUBJECTS, (String) httpServletRequest.getAttribute("username"));
+    /* ----------------------------- CHECK IF ACCESS TOKEN ISN'T VALID ------------------*/
+
+    public boolean isTokenInBlacklist(String username) {
+        return redisService.isAvailable(username);
+    }
+
+    /*------------------------------------- GENERATE REFRESHED TOKEN ------------------------*/
+
+    public String generateRefreshToken(ApplicationUser user) {
+        Date expiryDate = java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getRefreshExpirationDateInMs()));
+        return Jwts.builder()
+                .setSubject(user.getUser().getUsername())
+                .claim("authorities", user.getAuthorities())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(expiryDate)
+                .signWith(jwtSecretKey.secretKey())
+                .compact();
+    }
+
+    /*--------------------------------- ALLOWING REFRESHING THE TOKEN -----------------------*/
+    private void allowForRefreshToken(ApplicationUser user, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                null, null, null);
+        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        request.setAttribute("user", user);
     }
 }

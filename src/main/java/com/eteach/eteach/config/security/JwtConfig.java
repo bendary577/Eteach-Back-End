@@ -13,6 +13,7 @@ public class JwtConfig {
     private String secretKey;
     private String tokenPrefix;
     private Integer tokenExpirationAfterDays;
+    private Integer refreshExpirationDateInMs;
 
     public JwtConfig() {
     }
@@ -45,5 +46,13 @@ public class JwtConfig {
     public String getAuthorizationHeader() {
         System.out.println(HttpHeaders.AUTHORIZATION);
         return HttpHeaders.AUTHORIZATION;
+    }
+
+    public Integer getRefreshExpirationDateInMs() {
+        return refreshExpirationDateInMs;
+    }
+
+    public void setRefreshExpirationDateInMs(Integer refreshExpirationDateInMs) {
+        this.refreshExpirationDateInMs = refreshExpirationDateInMs;
     }
 }
