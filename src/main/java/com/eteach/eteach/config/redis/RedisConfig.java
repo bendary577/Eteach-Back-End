@@ -23,7 +23,7 @@ public class RedisConfig {
 
     @Bean
     @Primary
-    JedisConnectionFactory jedisConnectionFactory() throws Exception {
+    JedisConnectionFactory jedisConnectionFactory() {
         JedisConnectionFactory factory = new JedisConnectionFactory();
         factory.setHostName(redisHost);
         factory.setPort(redisPort);

@@ -158,4 +158,18 @@ public class CourseController {
         courseService.deleteCourse(course);
         return ResponseEntity.ok().build();
     }
+
+    /*--------------------------------------- ADD COURSE SECTION --------------------------------------*/
+
+    @PreAuthorize("hasRole('ROLE_TEACHER')")
+    @PostMapping(value = "/{id}/section/")
+    public ResponseEntity<?> addCourseSection(@PathVariable(value = "id") Long courseId,
+                                                   @PathVariable(value = "type") String type,
+                                                   @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile thumbnail) throws IOException {
+
+        return ResponseEntity.ok().build();
+    }
+
+
+
 }

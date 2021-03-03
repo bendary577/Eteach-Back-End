@@ -85,7 +85,6 @@ public class MailService {
         mail.getModel().put("userName", to);
         mail.getModel().put("action", action);
         mail.getModel().put("actionStatus", actionStatus);
-
         templateConfiguration.setClassForTemplateLoading(getClass(), basePackagePath);
         Template template = templateConfiguration.getTemplate("account-activity-change.ftl");
         String mailContent = FreeMarkerTemplateUtils.processTemplateIntoString(template, mail.getModel());

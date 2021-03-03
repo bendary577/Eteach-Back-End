@@ -1,6 +1,8 @@
 package com.eteach.eteach.api.auth;
 
 import com.eteach.eteach.enums.AccountType;
+import com.eteach.eteach.event.resetPasswordLink.GenerateResetLinkEvent;
+import com.eteach.eteach.event.resetPasswordLink.GenerateResetLinkPublisher;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.account.User;
@@ -137,6 +139,9 @@ public class AuthenticationController {
         //GENERATE NEW TOKEN
         Authentication authentication = authenticate(user.getUsername(), user.getPassword());
         String newJwtToken = JwtTokenProvider.generateToken(authentication);
+        //PUBLISH GENERATE RESET LINK EVENT AND SEND MAIL
+        //GenerateResetLinkEvent generateResetLinkEvent = new GenerateResetLinkEvent(urlBuilder);
+        //GenerateResetLinkPublisher generateResetLinkPublisher = new GenerateResetLinkPublisher();
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "Password reset link sent successfully"));
     }
 
