@@ -6,10 +6,16 @@ import com.eteach.eteach.dao.TeacherDAO;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.course.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -43,8 +49,14 @@ public class AccountService {
         return studentAccount;
     }
 
-    public List<StudentAccount> getAllStudents(){
-        return this.studentDAO.findAll();
+    public List<StudentAccount> getAllStudents(Integer pageNo, Integer pageSize) {
+        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("created_at"));
+        Page<StudentAccount> pagedResult = (Page<StudentAccount>) this.studentDAO.findAll(paging);
+        if(pagedResult.hasContent()) {
+            return pagedResult.getContent();
+        } else {
+            return new ArrayList<StudentAccount>();
+        }
     }
 
     public void deleteStudent(StudentAccount studentAccount){
@@ -52,7 +64,7 @@ public class AccountService {
     }
 
     /*-------------------------------------- TEACHER ACCOUNT ----------------------------------------------*/
-    public TeacherAccount createTeacher(TeacherAccount teacherAccount){return this.teacherDAO.save(teacherAccount);}
+    public TeacherAccount saveTeacher(TeacherAccount teacherAccount){return this.teacherDAO.save(teacherAccount);}
 
     public TeacherAccount updateTeacher(TeacherAccount oldTeacherAccount, TeacherAccount newTeacherAccount){
         return this.teacherDAO.save(newTeacherAccount);
@@ -64,8 +76,14 @@ public class AccountService {
         return teacherAccount;
     }
 
-    public List<TeacherAccount> getAllTeachers(){
-        return this.teacherDAO.findAll();
+    public List<TeacherAccount> getAllTeachers(Integer pageNo, Integer pageSize){
+        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("created_at"));
+        Page<TeacherAccount> pagedResult = (Page<TeacherAccount>) this.teacherDAO.findAll(paging);
+        if(pagedResult.hasContent()) {
+            return pagedResult.getContent();
+        } else {
+            return new ArrayList<TeacherAccount>();
+        }
     }
 
     public void deleteTeacher(TeacherAccount teacherAccount){

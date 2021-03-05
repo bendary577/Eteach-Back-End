@@ -90,8 +90,8 @@ public class Course implements Serializable {
     @LastModifiedDate
     private Date updated_at;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Category category;
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)

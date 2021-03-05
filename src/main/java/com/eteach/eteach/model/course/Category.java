@@ -1,11 +1,15 @@
 package com.eteach.eteach.model.course;
 
 import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.manyToManyRelations.CourseRating;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name="categories")
@@ -25,8 +29,9 @@ public class Category implements Serializable {
     @Column(nullable = false, length = 100)
     private String description;
 
-    @OneToOne(mappedBy = "category")
-    private Course course;
+    @OneToMany(mappedBy="category",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    private List<Course> courses;
 
     @OneToOne(mappedBy = "subject")
     private TeacherAccount teacher;
@@ -66,12 +71,12 @@ public class Category implements Serializable {
         this.description = description;
     }
 
-    public Course getCourse() {
-        return course;
+    public List<Course> getCourses() {
+        return courses;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setCourses(List<Course> courses) {
+        this.courses = courses;
     }
 
     public TeacherAccount getTeacher() {
