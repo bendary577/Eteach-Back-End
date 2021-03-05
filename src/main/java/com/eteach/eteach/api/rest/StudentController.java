@@ -27,7 +27,7 @@ public class StudentController {
 
     @PostMapping("/")
     public String postStudent(@Valid @RequestBody StudentAccount studentAccount) {
-        this.accountService.createStudent(studentAccount);
+        this.accountService.saveStudent(studentAccount);
         return "saved";
     }
 
@@ -41,7 +41,7 @@ public class StudentController {
         //studentAccount.setImage(fileName);
         String imageUploadDirectory = "user-photos/" + studentAccount.getId();
        // FileUpload.saveFile(imageUploadDirectory, fileName, image);
-        this.accountService.createStudent(studentAccount);
+        this.accountService.saveStudent(studentAccount);
         return "saved";
     }
 
@@ -82,5 +82,10 @@ public class StudentController {
         accountService.deleteStudent(studentAccount);
         return ResponseEntity.ok().build();
     }
+
+    //--------------- UPLOAD QUIZ ANSWERS : THEN MARK THE QUIZ AND RETURN MARK ---------------------------//
+
+
+
 
 }

@@ -29,7 +29,7 @@ public class AccountService {
     }
 
     /*-------------------------------------- STUDENT ACCOUNT ----------------------------------------------*/
-    public StudentAccount createStudent(StudentAccount studentAccount){
+    public StudentAccount saveStudent(StudentAccount studentAccount){
         return this.studentDAO.save(studentAccount);
     }
 

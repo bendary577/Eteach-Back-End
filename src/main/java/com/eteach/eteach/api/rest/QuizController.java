@@ -2,8 +2,12 @@ package com.eteach.eteach.api.rest;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.model.account.StudentAccount;
+import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
 import com.eteach.eteach.model.course.Course;
+import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.eteach.eteach.model.quiz.Quiz;
+import com.eteach.eteach.service.AccountService;
 import com.eteach.eteach.service.CourseService;
 import com.eteach.eteach.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value ="/api/v1/quizzes", produces = "application/json;charset=UTF-8")
@@ -20,12 +25,15 @@ public class QuizController {
 
     private final QuizService quizService;
     private final CourseService courseService;
+    private final AccountService accountService;
 
     @Autowired
     public QuizController(QuizService quizService,
-                          CourseService courseService) {
+                          CourseService courseService,
+                          AccountService accountService) {
         this.quizService = quizService;
         this.courseService =courseService;
+        this.accountService = accountService;
     }
 
     //---------------------------- CREATE NEW QUIZ ------------------------------------
@@ -37,7 +45,20 @@ public class QuizController {
         Quiz savedQuiz = this.quizService.createQuiz(quiz);
         course.getQuizzes().add(savedQuiz);
         savedQuiz.setCourse(course);
-        quizService.assignQuizToStudents();
+        //--- can be changed so that student assign quiz for himself not automatically --------------
+        List<StudentAccount> students = course.getStudents().stream()
+                .map( student -> {
+                    StudentQuiz studentQuiz = new StudentQuiz();
+                    StudentQuizKey studentQuizKey = new StudentQuizKey();
+                    studentQuizKey.setStudentId(student.getId());
+                    studentQuizKey.setQuizId(savedQuiz.getId());
+                    studentQuiz.setId(studentQuizKey);
+                    quizService.assignQuizToStudent(savedQuiz.getId(), studentQuiz);
+                    student.getQuizzes().add(studentQuiz);
+                    accountService.saveStudent(student);
+                    return student;
+                })
+                .collect(Collectors.toList());
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "quiz" + savedQuiz.getTitle() + "added successfully"));
     }
 

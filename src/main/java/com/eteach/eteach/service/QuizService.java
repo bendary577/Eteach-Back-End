@@ -34,12 +34,6 @@ public class QuizService {
         return this.quizDAO.save(quiz);
     }
 
-    //-------------------------- assign quiz to students ------------------------------------
-
-    public void assignQuizToStudents(){
-        //assignQuizToStudents(quiz);
-    }
-
     //-------------------------- GET A SINGLE QUIZ -----------------------------------------
     public Quiz getQuiz(Long id){
         Quiz quiz =  this.quizDAO.findById(id)
@@ -51,7 +45,7 @@ public class QuizService {
     public Quiz assignQuizToStudent(Long id, StudentQuiz studentQuiz){
         Quiz quiz = getQuiz(id);
         quiz.getStudents().add(studentQuiz);
-        return quiz;
+        return quizDAO.save(quiz);
     }
     //-------------------------- GET ALL TEACHER QUIZZES -----------------------------------------
     public List<Quiz> getAllCourseQuizzes(Long courseId){
@@ -73,21 +67,11 @@ public class QuizService {
         quizAddedEventPublisher.publishQuizAddedEvent(new QuizAddedEvent(this, teacherName, courseName, quiz));
     }
 
+    //------------------------ AUTOMATICALLY MARK THE QUIZ -----------------------------//
 
-    //------------------------ ASSIGN NEW QUIZ TO STUDENTS -----------------------------------
-    /*
-    public void assignQuizToStudents(Quiz quiz){
-        List<StudentAccount> students = (List<StudentAccount>) quiz.getCourse().getStudents();
-        if(students != null){
-            students.forEach(student -> StudentQuiz studentQuiz = new StudentQuiz();
-                                        StudentQuizKey studentQuizKey = new StudentQuizKey();
-                                        studentQuizKey.setStudentId(student.getId());
-                                        studentQuizKey.setQuizId(quiz.getId());
-                                        studentQuiz.setId(studentQuizKey);
-                                        student.getQuizzes().add(studentQuiz));
-        }else{
-            System.out.println("students are null");
-        }
-    }
-    */
+
+
+
+
+
 }
