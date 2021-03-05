@@ -148,7 +148,7 @@ public class CourseController {
     }
 
     /*------------------------------------ DELETE A SINGLE COURSE ----------------------------------- */
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE','ROLE_TEACHER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCourse(@PathVariable(value = "id") Long id) {
         Course course = courseService.getCourse(id);
@@ -171,6 +171,7 @@ public class CourseController {
     }
 
     /*--------------------------------- ADD COURSE LESSON TO SECTION -----------------------------*/
+
 
 
     /*------------------------------ RETURN COURSE WITH ALL SECTIONS ------------------------------*/
