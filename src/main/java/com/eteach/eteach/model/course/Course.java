@@ -3,7 +3,6 @@ package com.eteach.eteach.model.course;
 
 import com.eteach.eteach.config.file.UserDataConfig;
 import com.eteach.eteach.enums.Rating;
-import com.eteach.eteach.enums.Subjects;
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
 import com.eteach.eteach.model.account.StudentAccount;
@@ -80,9 +79,6 @@ public class Course implements Serializable {
     @Column(nullable = false, length = 100)
     private int ratings_number;
 
-    @Column(nullable = false, length = 100)
-    private Subjects category;
-
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -92,6 +88,10 @@ public class Course implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
     private Date updated_at;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    private Category category;
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
@@ -148,7 +148,7 @@ public class Course implements Serializable {
                   @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level,
                   @JsonProperty("rating") Rating rating,
                   @JsonProperty("rating_number") int ratings_number,
-                  @JsonProperty("category") Subjects category){
+                  @JsonProperty("category") Category category){
         this.name = name;
         this.description = description;
         this.price = price;
@@ -302,11 +302,11 @@ public class Course implements Serializable {
         this.ratings_number = ratings_number;
     }
 
-    public Subjects getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(Subjects category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 

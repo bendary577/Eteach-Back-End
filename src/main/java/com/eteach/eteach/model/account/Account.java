@@ -1,5 +1,6 @@
 package com.eteach.eteach.model.account;
 
+import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.notification.Notification;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -16,14 +17,18 @@ public abstract class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
-    private Long id;
+    protected Long id;
 
     @OneToOne(mappedBy = "account")
-    private User user;
+    protected User user;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
+    protected Image image;
 
     @OneToMany(mappedBy="account",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    private List<Notification> notifications;
+    protected List<Notification> notifications;
 
     public void setId(Long id) {
         this.id = id;
@@ -47,5 +52,20 @@ public abstract class Account {
 
     public void setNotifications(List<Notification> notifications) {
         this.notifications = notifications;
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    @Transient
+    public String getImagePath() {
+        if (image == null || this.id == null) return null;
+
+        return "/user-photos/" + this.id + "/" + image;
     }
 }

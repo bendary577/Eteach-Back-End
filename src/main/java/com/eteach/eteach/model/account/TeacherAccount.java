@@ -1,8 +1,7 @@
 package com.eteach.eteach.model.account;
 
-import com.eteach.eteach.enums.Subjects;
+import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
-import com.eteach.eteach.model.quiz.Quiz;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -25,12 +24,9 @@ public class TeacherAccount extends Account implements Serializable {
     @Column(length = 100)
     private String about_description;
 
-    @Column(length = 50)
-    private String image;
-
-    @Column(length = 100)
-    @Enumerated(EnumType.ORDINAL)
-    private Subjects subject;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "subject_id", referencedColumnName = "id")
+    private Category subject;
 
     @Column
     private String facebook_link;
@@ -44,13 +40,11 @@ public class TeacherAccount extends Account implements Serializable {
 
     public TeacherAccount() { }
 
-    public TeacherAccount(@JsonProperty("address") String about_description,
-                          @JsonProperty("grade")String image,
-                          @JsonProperty("image") Subjects subject,
+    public TeacherAccount(@JsonProperty("about") String about_description,
+                          @JsonProperty("subject") Category subject,
                           @JsonProperty("facebook_link") String facebook_link,
                           @JsonProperty("twitter_link") String twitter_link){
         this.about_description = about_description;
-        this.image = image;
         this.subject = subject;
         this.facebook_link = facebook_link;
         this.twitter_link = twitter_link;
@@ -81,19 +75,11 @@ public class TeacherAccount extends Account implements Serializable {
         this.about_description = about_description;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public Subjects getSubject() {
+    public Category getSubject() {
         return subject;
     }
 
-    public void setSubject(Subjects subject) {
+    public void setSubject(Category subject) {
         this.subject = subject;
     }
 
@@ -112,5 +98,6 @@ public class TeacherAccount extends Account implements Serializable {
     public void setTwitter_link(String twitter_link) {
         this.twitter_link = twitter_link;
     }
+
 
 }

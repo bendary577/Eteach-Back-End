@@ -15,8 +15,8 @@ import java.util.List;
 @Table(name="lessons")
 @EntityListeners(AuditingEntityListener.class)
 public class Lesson implements Serializable {
-    @Id
 
+    @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long id;

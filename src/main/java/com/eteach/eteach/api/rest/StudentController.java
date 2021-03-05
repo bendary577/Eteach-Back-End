@@ -38,7 +38,7 @@ public class StudentController {
             throw new ResourceNotFoundException("Student", "id", id);
         }
         String fileName = StringUtils.cleanPath(image.getOriginalFilename());
-        studentAccount.setImage(fileName);
+        //studentAccount.setImage(fileName);
         String imageUploadDirectory = "user-photos/" + studentAccount.getId();
        // FileUpload.saveFile(imageUploadDirectory, fileName, image);
         this.accountService.createStudent(studentAccount);
