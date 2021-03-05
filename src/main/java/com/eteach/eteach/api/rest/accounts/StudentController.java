@@ -1,4 +1,4 @@
-package com.eteach.eteach.api.rest;
+package com.eteach.eteach.api.rest.accounts;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.account.StudentAccount;

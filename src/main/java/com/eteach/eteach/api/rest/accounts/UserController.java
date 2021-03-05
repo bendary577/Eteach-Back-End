@@ -1,4 +1,4 @@
-package com.eteach.eteach.api.rest;
+package com.eteach.eteach.api.rest.accounts;
 
 import com.eteach.eteach.http.request.UpdatePasswordRequest;
 import com.eteach.eteach.http.response.ApiResponse;
