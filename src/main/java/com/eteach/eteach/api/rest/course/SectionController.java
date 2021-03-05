@@ -1,9 +1,13 @@
 package com.eteach.eteach.api.rest.course;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.course.Section;
+import com.eteach.eteach.service.CourseService;
 import com.eteach.eteach.service.SectionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,25 +19,32 @@ import java.util.List;
 public class SectionController {
 
     private final SectionService sectionService;
+    private final CourseService courseService;
 
     @Autowired
-    public SectionController(SectionService sectionService){
+    public SectionController(SectionService sectionService,
+                             CourseService courseService){
         this.sectionService = sectionService;
+        this.courseService = courseService;
     }
 
     //----------------------------- CREATE A NEW SECTION ---------------------------------------------------
     @PreAuthorize("hasRole('ROLE_TEACHER')")
-    @PostMapping("/")
-    public String postSection(@Valid @RequestBody Section section){
-        this.sectionService.createSection(section);
-        return "saved";
+    @PostMapping("/{courseId}")
+    public ResponseEntity<?> postSection(@PathVariable Long courseId, @Valid @RequestBody Section section){
+        Course course = courseService.getCourse(courseId);
+        course.getSections().add(section);
+        section.setCourse(course);
+        this.sectionService.saveSection(section);
+        this.courseService.saveCourse(course);
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "section saved successfully"));
     }
 
     //------------------------------ GET ALL SECTIONS --------------------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE','ROLE_STUDENT', 'ROLE_TEACHER')")
-    @GetMapping("/")
-    public List<Section> getAllSections() {
-        return sectionService.getAllSections();
+    @GetMapping("/{courseId}")
+    public List<Section> getAllSections(@PathVariable Long courseId) {
+        return sectionService.getAllSections(courseId);
     }
 
 

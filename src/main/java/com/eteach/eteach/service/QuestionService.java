@@ -18,7 +18,7 @@ public class QuestionService {
         this.questionDAO = questionDAO;
     }
 
-    public Question createQuestion(Question question){
+    public Question saveQuestion(Question question){
         return this.questionDAO.save(question);
     }
 
@@ -32,9 +32,15 @@ public class QuestionService {
         return question;
     }
 
-    public List<Question> getAllQuestions(){
+    public List<Question> getQuestionsByQuizId(Long quizId){
+        return this.questionDAO.findQuestionsByQuizId(quizId);
+    }
+
+   /*
+   public List<Question> getAllQuestions(){
         return this.questionDAO.findAll();
     }
+    */
 
     public void deleteQuestion(Question question){
         this.questionDAO.delete(question);

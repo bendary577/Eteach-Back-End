@@ -82,5 +82,11 @@ public class Question implements Serializable {
         this.image = image;
     }
 
+    @Transient
+    public String getImageDirPath() {
+        if (image == null || this.id == null) return null;
+
+        return "/quiz-questions/" + this.id + "/" + image;
+    }
 
 }

@@ -23,8 +23,7 @@ import java.util.Set;
 @Entity
 @Table(name="quizzes")
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"},
-        allowGetters = true)
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
 public class Quiz implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

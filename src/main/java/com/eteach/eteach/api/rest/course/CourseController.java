@@ -43,7 +43,7 @@ public class CourseController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
     @PostMapping("/")
     public ResponseEntity<?> postCourse(@Valid @RequestBody Course course) {
-        this.courseService.createCourse(course);
+        this.courseService.saveCourse(course);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course saved successfully"));
     }
 
@@ -100,7 +100,6 @@ public class CourseController {
     @GetMapping("/")
     public List<Course> getAllCourses(@RequestParam(defaultValue = "0") Integer pageNo,
                                       @RequestParam(defaultValue = "10") Integer pageSize) {
-        System.out.println("i'm here with ROLE_TEACHER");
         return courseService.getAllCourses(pageNo, pageSize);
     }
 

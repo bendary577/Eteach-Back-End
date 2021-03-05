@@ -2,10 +2,12 @@ package com.eteach.eteach.service;
 
 import com.eteach.eteach.dao.FileDAO;
 import com.eteach.eteach.dao.ImageDAO;
+import com.eteach.eteach.dao.MaterialDAO;
 import com.eteach.eteach.dao.VideoDAO;
 import com.eteach.eteach.exception.FileStorageException;
 import com.eteach.eteach.model.file.File;
 import com.eteach.eteach.model.file.Image;
+import com.eteach.eteach.model.file.Material;
 import com.eteach.eteach.model.file.Video;
 import com.eteach.eteach.utils.FileStorageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +26,10 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class FileService {
 
-    private FileDAO fileDAO;
-    private VideoDAO videoDAO;
-    private ImageDAO imageDAO;
+    private final FileDAO fileDAO;
+    private final VideoDAO videoDAO;
+    private final ImageDAO imageDAO;
+    private final MaterialDAO materialDAO;
     private FileStorageUtil fileStorageUtil;
     private String path;
 
@@ -34,10 +37,12 @@ public class FileService {
     public FileService(FileDAO fileDAO,
                        VideoDAO videoDAO,
                        ImageDAO imageDAO,
+                       MaterialDAO materialDAO,
                        FileStorageUtil fileStorageUtil){
         this.fileDAO = fileDAO;
         this.videoDAO = videoDAO;
         this.imageDAO = imageDAO;
+        this.materialDAO = materialDAO;
         this.fileStorageUtil = fileStorageUtil;
     }
 
@@ -88,6 +93,19 @@ public class FileService {
         return imageDAO.save(image);
     }
 
+    /*--------------------------- CREATE NEW Image OBJECT IN DATABASE ----------------------------------*/
+    @Transactional
+    public Material createMaterialFile(MultipartFile multipartFile) throws IOException {
+        Material material = new Material();
+        String fileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
+        material.setName(fileName);
+        //file.setExtension(FilenameUtils.getExtension(file.getName()));
+        //SAVE FILE IN FILE SYSTEM
+        saveFileInFileSystem(fileName, multipartFile);
+        material.setPath(path);
+        return materialDAO.save(material);
+    }
+
     /*----------------------------- GET FILE OBJECT FROM DATABASE -------------------------------------*/
     public Optional<File> findById(Long id) {
         return fileDAO.findById(id);
@@ -101,6 +119,22 @@ public class FileService {
     public boolean validateImageFile(String contentType, Long size) {
         return fileStorageUtil.validateImageFile(contentType, size);
     }
+
+    /*----------------------------- VALIDATE MATERIAL FILE -----------------------------------------------------*/
+    public boolean validateMaterialFile(String contentType, Long size) {
+        return fileStorageUtil.validateMaterialFile(contentType, size);
+    }
+
+    /*------------------------------- SAVE IMAGE ----------------------------------------------*/
+    public void saveImage(Image image){
+        this.imageDAO.save(image);
+    }
+
+    /*------------------------------- SAVE VIDEO ----------------------------------------------*/
+    public void saveVideo(Video video){
+        this.videoDAO.save(video);
+    }
+
     /*------------------------------- GETTERS AND SETTERS ----------------------------------------------*/
     public String getPath() {
         return path;

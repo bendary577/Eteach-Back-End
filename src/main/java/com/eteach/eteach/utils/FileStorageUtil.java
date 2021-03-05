@@ -17,6 +17,12 @@ public class FileStorageUtil {
     @Value("${server.compression.mime-types}")
     private List<String> contentVideos;
 
+    @Value("${server.compression.mime-types}")
+    private List<String> contentImages;
+
+    @Value("${server.compression.mime-types}")
+    private List<String> contentMaterials;
+
     private final long VIDEO_SIZE_LIMIT = 200 * 1024 * 1024;
     private final long IMAGE_SIZE_LIMIT = 200 * 1024 * 1024;
     private final long PDF_SIZE_LIMIT = 200 * 1024 * 1024;
@@ -51,7 +57,14 @@ public class FileStorageUtil {
 
     /*----------------------------- VALIDATE IMAGE FILE -----------------------------------------------------*/
     public boolean validateImageFile(String contentType, Long size) {
-        if (!contentVideos.contains(contentType) || size > IMAGE_SIZE_LIMIT) {
+        if (!contentImages.contains(contentType) || size > IMAGE_SIZE_LIMIT) {
+            return false;
+        }
+        return true;
+    }
+    /*----------------------------- VALIDATE IMAGE FILE -----------------------------------------------------*/
+    public boolean validateMaterialFile(String contentType, Long size) {
+        if (!contentMaterials.contains(contentType) || size > PDF_SIZE_LIMIT) {
             return false;
         }
         return true;

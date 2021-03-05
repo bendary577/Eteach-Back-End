@@ -1,40 +1,56 @@
 package com.eteach.eteach.api.rest.quiz;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.model.quiz.Choice;
+import com.eteach.eteach.model.quiz.Question;
 import com.eteach.eteach.service.ChoiceService;
+import com.eteach.eteach.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value ="/api/v1/choices", produces = "application/json;charset=UTF-8")
 public class ChoiceController {
 
     private final ChoiceService choiceService;
+    private final QuestionService questionService;
 
     @Autowired
-    public ChoiceController(ChoiceService choiceService){
+    public ChoiceController(ChoiceService choiceService, QuestionService questionService){
         this.choiceService = choiceService;
+        this.questionService = questionService;
     }
 
     //----------------------------- CREATE A NEW Choice ---------------------------------------------------
     @PreAuthorize("hasRole('ROLE_TEACHER')")
-    @PostMapping("/")
-    public String postChoice(@Valid @RequestBody Choice choice){
-        this.choiceService.createChoice(choice);
-        return "saved";
+    @PostMapping("/{questionId}")
+    public ResponseEntity<?> postChoices(@PathVariable Long questionId, @Valid @RequestBody List<Choice> choices){
+        Question question = questionService.getQuestion(questionId);
+        choices.stream()
+                .peek(choice -> {
+                    choice.setQuestion(question);
+                    this.choiceService.createChoice(choice);
+                    question.getChoices().add(choice);
+                    this.questionService.saveQuestion(question);
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "choices saved successfully"));
     }
 
     //----------------------------- GET ALL Choices ---------------------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE','ROLE_STUDENT', 'ROLE_TEACHER')")
-    @GetMapping("/")
-    public List<Choice> getAllChoices() {
-        return choiceService.getAllChoices();
+    @GetMapping("/{questionId}")
+    public List<Choice> getAllChoices(@PathVariable Long questionId) {
+        return choiceService.getAllChoices(questionId);
     }
 
     //----------------------------- GET A SINGLE Choice ---------------------------------------------------

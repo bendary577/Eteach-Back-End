@@ -24,7 +24,7 @@ public class CourseService {
         this.courseDAO = courseDAO;
     }
 
-    public Course createCourse(Course course){
+    public Course saveCourse(Course course){
         return this.courseDAO.save(course);
     }
 

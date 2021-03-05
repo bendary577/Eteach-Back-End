@@ -32,8 +32,8 @@ public class ChoiceService {
         return choice;
     }
 
-    public List<Choice> getAllChoices(){
-        return this.ChoiceDAO.findAll();
+    public List<Choice> getAllChoices(Long questionId){
+        return this.ChoiceDAO.findChoicesByQuestionId(questionId);
     }
 
     public void deleteChoice(Choice choice){

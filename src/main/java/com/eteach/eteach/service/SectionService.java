@@ -18,7 +18,7 @@ public class SectionService {
         this.sectionDAO = sectionDAO;
     }
 
-    public Section createSection(Section section){
+    public Section saveSection(Section section){
         return this.sectionDAO.save(section);
     }
 
@@ -32,8 +32,8 @@ public class SectionService {
         return section;
     }
 
-    public List<Section> getAllSections(){
-        return this.sectionDAO.findAll();
+    public List<Section> getAllSections(Long courseId){
+        return this.sectionDAO.findSectionsByCourseId(courseId);
     }
 
     public void deleteSection(Section section){

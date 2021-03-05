@@ -38,27 +38,17 @@ public class QuizController {
 
     //---------------------------- CREATE NEW QUIZ ------------------------------------
     @PreAuthorize("hasRole('ROLE_TEACHER')")
-    @PostMapping("/{id}")
-    public ResponseEntity<?> postQuiz(@Valid @RequestBody Quiz quiz, @PathVariable Long courseId) {
-        //GET THE QUIZ COURSE
+    @PostMapping("/{courseId}")
+    public ResponseEntity<?> postQuiz( @PathVariable Long courseId, @Valid @RequestBody Quiz quiz) {
+        //get the quiz course and create quiz
         Course course = courseService.getCourse(courseId);
         Quiz savedQuiz = this.quizService.createQuiz(quiz);
+        //assign courses to quizzes
         course.getQuizzes().add(savedQuiz);
         savedQuiz.setCourse(course);
-        //--- can be changed so that student assign quiz for himself not automatically --------------
-        List<StudentAccount> students = course.getStudents().stream()
-                .map( student -> {
-                    StudentQuiz studentQuiz = new StudentQuiz();
-                    StudentQuizKey studentQuizKey = new StudentQuizKey();
-                    studentQuizKey.setStudentId(student.getId());
-                    studentQuizKey.setQuizId(savedQuiz.getId());
-                    studentQuiz.setId(studentQuizKey);
-                    quizService.assignQuizToStudent(savedQuiz.getId(), studentQuiz);
-                    student.getQuizzes().add(studentQuiz);
-                    accountService.saveStudent(student);
-                    return student;
-                })
-                .collect(Collectors.toList());
+        //update info in database
+        quizService.saveQuiz(savedQuiz);
+        courseService.saveCourse(course);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "quiz" + savedQuiz.getTitle() + "added successfully"));
     }
 

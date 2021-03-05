@@ -2,7 +2,11 @@ package com.eteach.eteach.api.rest.accounts;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.account.StudentAccount;
+import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
+import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
+import com.eteach.eteach.model.quiz.Quiz;
 import com.eteach.eteach.service.AccountService;
+import com.eteach.eteach.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,11 +23,14 @@ import java.util.List;
 @RequestMapping(value ="/api/v1/students", produces = "application/json;charset=UTF-8")
 public class StudentController {
 
+    private final QuizService quizService;
     private final AccountService accountService;
 
     @Autowired
-    public StudentController(AccountService accountService){
+    public StudentController(AccountService accountService,
+                             QuizService quizService){
         this.accountService = accountService;
+        this.quizService = quizService;
     }
 
     //-------------------------- CREATE A NEW STUDENT ------------------------------------------------
@@ -97,8 +104,38 @@ public class StudentController {
         return ResponseEntity.ok().build();
     }
 
-    //--------------- UPLOAD QUIZ ANSWERS : THEN MARK THE QUIZ AND RETURN MARK ---------------------------//
+    //------------------------------ ASSIGN QUIZ TO STUDENT ------------------------------------------------
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    @PostMapping("/{quizId}")
+    public ResponseEntity<?> takeQuiz(@PathVariable(value = "quizId") Long quizId, @Valid @RequestBody Long studentId) {
+        //get the quiz and the student account
+        Quiz quiz = quizService.getQuiz(quizId);
+        StudentAccount studentAccount = accountService.getStudent(studentId);
 
+        //create student_quiz_key
+        StudentQuizKey studentQuizKey = new StudentQuizKey();
+        studentQuizKey.setQuizId(quizId);
+        studentQuizKey.setStudentId(studentId);
+
+        //create student_quiz
+        StudentQuiz studentQuiz = new StudentQuiz();
+        studentQuiz.setId(studentQuizKey);
+        studentQuiz.setStudent(studentAccount);
+        studentQuiz.setQuiz(quiz);
+
+        //assign quiz to student
+        studentAccount.getQuizzes().add(studentQuiz);
+        quiz.getStudents().add(studentQuiz);
+
+        //save info in database
+        accountService.saveStudent(studentAccount);
+        quizService.saveQuiz(quiz);
+
+        return ResponseEntity.ok().build();
+    }
+
+    //--------------- UPLOAD QUIZ ANSWERS : THEN MARK THE QUIZ AND RETURN MARK ---------------------------//
+    //takes quizId, student choices array, then return the student mark
 
 
 

@@ -113,4 +113,16 @@ public class Lesson implements Serializable {
         this.materials = materials;
     }
 
+    @Transient
+    public String getVideoDirPath() {
+        if (video == null || this.id == null) return null;
+        return "/lesson-videos/" + this.id + "/" + video;
+    }
+
+    @Transient
+    public String getMaterialDirPath() {
+        if (video == null || this.id == null) return null;
+        return "/lesson-materials/" + this.id + "/" + materials;
+    }
+
 }

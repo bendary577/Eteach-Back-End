@@ -21,7 +21,7 @@ public class Choice implements Serializable {
 
     @NotBlank
     @Column(nullable = false, length = 100)
-    private char letter;
+    private int number;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "qustion_id", referencedColumnName = "id")
@@ -30,7 +30,7 @@ public class Choice implements Serializable {
     public Choice() { }
 
     public Choice(@JsonProperty("id")Long id, @JsonProperty("text") String text,
-                  @JsonProperty("letter")char letter){
+                  @JsonProperty("number")int number){
 
     }
 
@@ -50,12 +50,12 @@ public class Choice implements Serializable {
         this.text = text;
     }
 
-    public char getLetter() {
-        return letter;
+    public int getNumber() {
+        return number;
     }
 
-    public void setLetter(char letter) {
-        this.letter = letter;
+    public void setNumber(int number) {
+        this.number = number;
     }
 
     public Question getQuestion() {

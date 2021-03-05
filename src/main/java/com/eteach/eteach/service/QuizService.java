@@ -34,6 +34,11 @@ public class QuizService {
         return this.quizDAO.save(quiz);
     }
 
+    //-------------------------- SAVE QUIZ ----------------------------------------------
+    public Quiz saveQuiz(Quiz quiz){
+        return this.quizDAO.save(quiz);
+
+    }
     //-------------------------- GET A SINGLE QUIZ -----------------------------------------
     public Quiz getQuiz(Long id){
         Quiz quiz =  this.quizDAO.findById(id)

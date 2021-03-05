@@ -20,7 +20,7 @@ public class LessonService {
         this.lessonDAO = lessonDAO;
     }
 
-    public Lesson createLesson(Lesson lesson){
+    public Lesson saveLesson(Lesson lesson){
         return this.lessonDAO.save(lesson);
     }
 
