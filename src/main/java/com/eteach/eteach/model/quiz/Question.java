@@ -74,11 +74,13 @@ public class Question implements Serializable {
         this.choices = choices;
     }
 
-    public Image getThumbnail() {
+    public Image getImage() {
         return image;
     }
 
-    public void setThumbnail(Image image) {
+    public void setImage(Image image) {
         this.image = image;
     }
+
+
 }

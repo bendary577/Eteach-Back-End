@@ -9,6 +9,7 @@ import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.file.Video;
+import com.eteach.eteach.model.manyToManyRelations.CourseRating;
 import com.eteach.eteach.model.quiz.Quiz;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -107,7 +108,7 @@ public class Course implements Serializable {
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    private List<RatingInstance> ratings;
+    private List<CourseRating> ratings;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
@@ -146,8 +147,6 @@ public class Course implements Serializable {
                   @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
                   @JsonProperty("students_number") int students_number,
                   @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level,
-                  @JsonProperty("rating") Rating rating,
-                  @JsonProperty("rating_number") int ratings_number,
                   @JsonProperty("category") Category category){
         this.name = name;
         this.description = description;
@@ -158,11 +157,7 @@ public class Course implements Serializable {
         this.what_yow_will_learn = what_yow_will_learn;
         this.students_number = students_number;
         this.difficulty_level = difficulty_level;
-        this.rating = rating;
-        this.ratings_number = ratings_number;
-        this.difficulty_level = difficulty_level;
         this.category = category;
-
     }
 
     /*------------------------------------ GETTERS AND SETTERS ---------------------------------------*/
@@ -254,11 +249,11 @@ public class Course implements Serializable {
         this.grade = grade;
     }
 
-    public List<RatingInstance> getRatings() {
+    public List<CourseRating> getRatings() {
         return ratings;
     }
 
-    public void setRatings(List<RatingInstance> ratings) {
+    public void setRatings(List<CourseRating> ratings) {
         this.ratings = ratings;
     }
 

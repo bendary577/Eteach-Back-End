@@ -39,7 +39,7 @@ public class CourseController {
         this.accountService = accountService;
     }
 
-    /*------------------------------------ SAVE A NEW COURSE ---------------------------------------------- */
+    /*------------------------------------ CREATE A NEW COURSE ---------------------------------------------- */
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
     @PostMapping("/")
     public ResponseEntity<?> postCourse(@Valid @RequestBody Course course) {
@@ -170,6 +170,10 @@ public class CourseController {
         return ResponseEntity.ok().build();
     }
 
+    /*--------------------------------- ADD COURSE LESSON TO SECTION -----------------------------*/
+
+
+    /*------------------------------ RETURN COURSE WITH ALL SECTIONS ------------------------------*/
 
 
 }

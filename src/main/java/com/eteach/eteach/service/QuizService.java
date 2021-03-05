@@ -5,7 +5,9 @@ import com.eteach.eteach.event.newQuiz.QuizAddedEventPublisher;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
 import com.eteach.eteach.model.course.Course;
+import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.eteach.eteach.model.quiz.Quiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,26 +30,37 @@ public class QuizService {
 
     //-------------------------- CREATE NEW QUIZ -----------------------------------------
     public Quiz createQuiz(Quiz quiz){
-        assignQuizToStudents(quiz);
         publishQuizAddedEvent(quiz);
         return this.quizDAO.save(quiz);
     }
 
-    //-------------------------- GET A SINGLE QUIZ -----------------------------------------
-    public Quiz getQuiz(Long id){
-        Quiz lesson =  this.quizDAO.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
-        return lesson;
+    //-------------------------- assign quiz to students ------------------------------------
+
+    public void assignQuizToStudents(){
+        //assignQuizToStudents(quiz);
     }
 
+    //-------------------------- GET A SINGLE QUIZ -----------------------------------------
+    public Quiz getQuiz(Long id){
+        Quiz quiz =  this.quizDAO.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
+        return quiz;
+    }
+
+    //---------------------------- UPDATE A SINGLE QUIZ -----------------------------------------
+    public Quiz assignQuizToStudent(Long id, StudentQuiz studentQuiz){
+        Quiz quiz = getQuiz(id);
+        quiz.getStudents().add(studentQuiz);
+        return quiz;
+    }
     //-------------------------- GET ALL TEACHER QUIZZES -----------------------------------------
     public List<Quiz> getAllCourseQuizzes(Long courseId){
         return this.quizDAO.findQuizzesByCourseId(courseId);
     }
 
     //-------------------------- DELETE A SINGLE QUIZ -----------------------------------------
-    public void deleteQuiz(Quiz lesson){
-        this.quizDAO.delete(lesson);
+    public void deleteQuiz(Quiz quiz){
+        this.quizDAO.delete(quiz);
     }
 
     //-------------------------- PUBLISH QUIZ ADDED EVENT ------------------------------------
@@ -60,14 +73,21 @@ public class QuizService {
         quizAddedEventPublisher.publishQuizAddedEvent(new QuizAddedEvent(this, teacherName, courseName, quiz));
     }
 
+
     //------------------------ ASSIGN NEW QUIZ TO STUDENTS -----------------------------------
+    /*
     public void assignQuizToStudents(Quiz quiz){
         List<StudentAccount> students = (List<StudentAccount>) quiz.getCourse().getStudents();
         if(students != null){
-            students.forEach(student -> student.getQuizzes().add(quiz));
+            students.forEach(student -> StudentQuiz studentQuiz = new StudentQuiz();
+                                        StudentQuizKey studentQuizKey = new StudentQuizKey();
+                                        studentQuizKey.setStudentId(student.getId());
+                                        studentQuizKey.setQuizId(quiz.getId());
+                                        studentQuiz.setId(studentQuizKey);
+                                        student.getQuizzes().add(studentQuiz));
         }else{
             System.out.println("students are null");
         }
     }
-
+    */
 }

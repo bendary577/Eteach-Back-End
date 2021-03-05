@@ -3,8 +3,11 @@ package com.eteach.eteach.model.account;
 
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.model.course.Course;
-import com.eteach.eteach.model.quiz.Quiz;
+import com.eteach.eteach.model.manyToManyRelations.CourseRating;
+import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
@@ -37,14 +40,13 @@ public class StudentAccount extends Account implements Serializable {
     )
     Set<Course> courses = new HashSet<>();
 
-    @ManyToMany(cascade = { CascadeType.ALL })
-    @JoinTable(
-            name = "student_quiz",
-            joinColumns = { @JoinColumn(name = "student_id") },
-            inverseJoinColumns = { @JoinColumn(name = "quiz_id") }
-    )
-    Set<Quiz> quizzes = new HashSet<>();
+    @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    Set<StudentQuiz> quizzes = new HashSet<>();
 
+    @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    Set<CourseRating> ratings = new HashSet<>();
 
 
     public StudentAccount() { }
@@ -87,13 +89,19 @@ public class StudentAccount extends Account implements Serializable {
         this.courses = courses;
     }
 
-    public Set<Quiz> getQuizzes() {
+    public Set<StudentQuiz> getQuizzes() {
         return quizzes;
     }
 
-    public void setQuizzes(Set<Quiz> quizzes) {
+    public void setQuizzes(Set<StudentQuiz> quizzes) {
         this.quizzes = quizzes;
     }
 
+    public Set<CourseRating> getRatings() {
+        return ratings;
+    }
 
+    public void setRatings(Set<CourseRating> ratings) {
+        this.ratings = ratings;
+    }
 }

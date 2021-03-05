@@ -1,9 +1,10 @@
 package com.eteach.eteach.model.quiz;
 
 import com.eteach.eteach.enums.LevelOfDifficulty;
-import com.eteach.eteach.model.account.StudentAccount;
-import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
+import com.eteach.eteach.model.file.Image;
+import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
@@ -46,6 +47,9 @@ public class Quiz implements Serializable {
     @Column(nullable = false, length = 100)
     private int final_grade;
 
+    @Column(nullable = false, length = 100)
+    private int applied_students_number;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -60,8 +64,9 @@ public class Quiz implements Serializable {
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Question> questions;
 
-    @ManyToMany(mappedBy = "quizzes")
-    private Set<StudentAccount> students = new HashSet<>();
+    @OneToMany(mappedBy = "quiz",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    private Set<StudentQuiz> students = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
@@ -141,11 +146,11 @@ public class Quiz implements Serializable {
         this.questions = questions;
     }
 
-    public Set<StudentAccount> getStudents() {
+    public Set<StudentQuiz> getStudents() {
         return students;
     }
 
-    public void setStudents(Set<StudentAccount> students) {
+    public void setStudents(Set<StudentQuiz> students) {
         this.students = students;
     }
 
@@ -155,5 +160,13 @@ public class Quiz implements Serializable {
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public int getApplied_students_number() {
+        return applied_students_number;
+    }
+
+    public void setApplied_students_number(int applied_students_number) {
+        this.applied_students_number = applied_students_number;
     }
 }

@@ -37,6 +37,7 @@ public class QuizController {
         Quiz savedQuiz = this.quizService.createQuiz(quiz);
         course.getQuizzes().add(savedQuiz);
         savedQuiz.setCourse(course);
+        quizService.assignQuizToStudents();
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "quiz" + savedQuiz.getTitle() + "added successfully"));
     }
 
@@ -65,5 +66,7 @@ public class QuizController {
         quizService.deleteQuiz(quiz);
         return ResponseEntity.ok().build();
     }
+
+    //------------------------ AUTOMATIC MARKING QUIZ ----------------------------------
 
 }

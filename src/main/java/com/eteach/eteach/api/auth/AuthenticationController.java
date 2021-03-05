@@ -148,7 +148,7 @@ public class AuthenticationController {
     /*------------------------------ REFRESH TOKEN ---------------------------------------*/
 
     @GetMapping("/refreshtoken")
-    public ResponseEntity<?> refreshtoken(HttpServletRequest request) throws Exception {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) throws Exception {
         ApplicationUser user = (ApplicationUser) request.getAttribute("user");
         String refreshedToken = JwtTokenProvider.generateRefreshToken(user);
         return ResponseEntity.ok(new JwtAuthenticationResponse(refreshedToken, user.getUsername(), user.getAuthorities()));
