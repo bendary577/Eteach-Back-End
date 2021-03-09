@@ -154,16 +154,22 @@ public class CourseController {
     public ResponseEntity<?> subscribeToCourse(@PathVariable(value = "id") Long id,
                                   @Valid @RequestBody SubscribeToCourseRequest subscribeToCourseRequest) {
         System.out.println("student id :" + subscribeToCourseRequest.getStudentId());
+        //GET STUDENT
         Long studentId = subscribeToCourseRequest.getStudentId();
         StudentAccount student = accountService.getStudent(studentId);
         String studentUsername = student.getUser().getUsername();
+        //GET COURSE
         Course course = courseService.getCourse(id);
         String courseName = course.getName();
+        //ASSIGN STUDENT TO COURSE
         student.getCourses().add(course);
         course.getStudents().add(student);
+        //INCREMENT COURSE STUDENT NUMBER
         course.setStudents_number(course.getStudents_number() + 1);
+        //SAVE INFO IN DATABASE
         courseService.saveCourse(course);
         accountService.saveStudent(student);
+        //RETURN API RESPONSE
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "student" + studentUsername + "subscribed to course" + courseName + "successfully"));
     }
 
