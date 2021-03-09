@@ -7,17 +7,16 @@ import java.io.Serializable;
 
 
 @Entity
-@Table(name="admin_accounts")
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("admin_account")
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+//@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 public class AdminAccount extends Account implements Serializable {
-
+/*
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long id;
-
+*/
     public AdminAccount() { }
 
     public Long getId() {

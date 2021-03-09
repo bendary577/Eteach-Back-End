@@ -4,5 +4,20 @@
       "name": "application.jwt.secretKey",
       "type": "java.lang.String",
       "description": "Description for application.jwt.secretKey."
-  }
-] }
+    },
+    {
+      "name": "redis.port",
+      "type": "java.lang.String",
+      "description": "Description for redis.port."
+    },
+    {
+      "name": "redis.host",
+      "type": "java.lang.String",
+      "description": "Description for redis.host."
+    },
+    {
+      "name": "redis.pass",
+      "type": "java.lang.String",
+      "description": "Description for redis.pass."
+    }
+  ] }

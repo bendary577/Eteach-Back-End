@@ -3,9 +3,7 @@ package com.eteach.eteach.api.auth;
 import com.eteach.eteach.enums.AccountType;
 import com.eteach.eteach.event.resetPasswordLink.GenerateResetLinkEvent;
 import com.eteach.eteach.event.resetPasswordLink.GenerateResetLinkPublisher;
-import com.eteach.eteach.model.account.StudentAccount;
-import com.eteach.eteach.model.account.TeacherAccount;
-import com.eteach.eteach.model.account.User;
+import com.eteach.eteach.model.account.*;
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.http.response.JwtAuthenticationResponse;
@@ -14,7 +12,6 @@ import com.eteach.eteach.http.request.SignUpRequest;
 import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
-import com.eteach.eteach.model.account.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -118,13 +115,16 @@ public class AuthenticationController {
         }else if(signUpRequest.getAccountType() == AccountType.TEACHER.getAccountCode()){
             account = new StudentAccount();
             user.setRole(STUDENT);
+        } else if(signUpRequest.getAccountType() == AccountType.ADMIN.getAccountCode()){
+            account = new AdminAccount();
+            user.setRole(ADMIN);
         }
         user.setAccount(account);
 
         //SAVE THE NEW USER AND RETURN IT'S DETAILS
         User result = applicationUserService.createUser(user);
 
-        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "teacher" + user.getUsername() +"registered successfully"));
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "user" + user.getUsername() +"registered successfully"));
     }
 
     /*-------------------------------- SEND RESET PASSWORD LINK ------------------------------*/

@@ -4,7 +4,7 @@ import com.eteach.eteach.model.course.Course;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository("coursedaoimp")
+@Repository
 public interface CourseDAO extends PagingAndSortingRepository<Course, Long> {
 
 }

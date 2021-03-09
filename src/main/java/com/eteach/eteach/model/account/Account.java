@@ -2,6 +2,7 @@ package com.eteach.eteach.model.account;
 
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.notification.Notification;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -20,6 +21,7 @@ public abstract class Account {
     protected Long id;
 
     @OneToOne(mappedBy = "account")
+    @JsonIgnoreProperties("account")
     protected User user;
 
     @OneToOne(cascade = CascadeType.ALL)

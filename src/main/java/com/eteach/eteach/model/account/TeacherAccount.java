@@ -11,15 +11,9 @@ import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name="teacher_accounts")
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("teacher_account")
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 public class TeacherAccount extends Account implements Serializable {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
-    private Long id;
 
     @Column(length = 100)
     private String about_description;

@@ -11,6 +11,7 @@ import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.file.Video;
 import com.eteach.eteach.model.manyToManyRelations.CourseRating;
 import com.eteach.eteach.model.quiz.Quiz;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
@@ -55,7 +56,7 @@ public class Course implements Serializable {
     @Column(nullable = false, length = 80)
     private String duration;
 
-    @Column(nullable = false, length = 11)
+    @Column(nullable = false, length = 80)
     private String intro;
 
     @Column(nullable = false, length = 50)
@@ -65,19 +66,16 @@ public class Course implements Serializable {
     @Column(nullable = false, length = 50)
     private String what_yow_will_learn;
 
-    @Column(nullable = false)
+    @Column
     private int students_number;
 
-    @Column(nullable = false)
+    @Column
     private int lessons_number;
 
     @Column(nullable = false, length = 100)
     private LevelOfDifficulty difficulty_level;
 
-    @Column(nullable = false, length = 100)
-    private Rating rating;
-
-    @Column(nullable = false, length = 100)
+    @Column
     private int ratings_number;
 
     @Column(nullable = false, updatable = false)
@@ -91,34 +89,42 @@ public class Course implements Serializable {
     private Date updated_at;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("category")
     private Category category;
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnoreProperties("sections")
     private List<Section> sections;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "trailer_video_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("trailer_video")
     private Video trailer_video;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("thumbnail")
     private Image thumbnail;
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnoreProperties("ratings")
     private List<CourseRating> ratings;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("teacher_account")
     private TeacherAccount teacher_account;
 
     @ManyToMany(mappedBy = "courses")
+    @JsonIgnoreProperties("courses")
     private Set<StudentAccount> students = new HashSet<>();
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnoreProperties("quizzes")
     private List<Quiz> quizzes;
 
     @ManyToMany(cascade = { CascadeType.ALL })
@@ -127,6 +133,7 @@ public class Course implements Serializable {
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "tag_id") }
     )
+    @JsonIgnoreProperties("tags")
     Set<Tag> tags = new HashSet<>();
 
     private transient UserDataConfig userDataConfig = null;
@@ -145,9 +152,7 @@ public class Course implements Serializable {
                   @JsonProperty("intro") String intro,
                   @JsonProperty("grade") Grade grade,
                   @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
-                  @JsonProperty("students_number") int students_number,
-                  @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level,
-                  @JsonProperty("category") Category category){
+                  @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level){
         this.name = name;
         this.description = description;
         this.price = price;
@@ -155,9 +160,7 @@ public class Course implements Serializable {
         this.intro = intro;
         this.grade = grade;
         this.what_yow_will_learn = what_yow_will_learn;
-        this.students_number = students_number;
         this.difficulty_level = difficulty_level;
-        this.category = category;
     }
 
     /*------------------------------------ GETTERS AND SETTERS ---------------------------------------*/
@@ -281,14 +284,6 @@ public class Course implements Serializable {
         this.difficulty_level = difficulty_level;
     }
 
-    public Rating getRating() {
-        return rating;
-    }
-
-    public void setRating(Rating rating) {
-        this.rating = rating;
-    }
-
     public int getRatings_number() {
         return ratings_number;
     }
@@ -363,6 +358,7 @@ public class Course implements Serializable {
 
     /* ---------------------------- PATHS TO PERSIST DATA IN FILESYSTEM ----------------------------------------*/
     @Transient
+    @JsonIgnore
     public String getTrailerVideoDirPath() {
         String coursePath = prepareCoursePaths();
         String trailerVideoPath = new StringBuilder(coursePath)
@@ -372,6 +368,7 @@ public class Course implements Serializable {
     }
 
     @Transient
+    @JsonIgnore
     public String getThumbnailDirPath() {
         String coursePath = prepareCoursePaths();
         String imagepath = new StringBuilder(coursePath)
@@ -380,6 +377,8 @@ public class Course implements Serializable {
         return imagepath;
     }
 
+    @Transient
+    @JsonIgnore
     private String prepareCoursePaths(){
         String path = new StringBuilder(userDataConfig.getCoursesDirectory())
                 .append(java.io.File.separator)

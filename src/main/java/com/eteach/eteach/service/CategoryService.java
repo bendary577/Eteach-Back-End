@@ -18,7 +18,7 @@ public class CategoryService {
         this.categoryDAO = categoryDAO;
     }
 
-    public Category createCategory(Category category){
+    public Category saveCategory(Category category){
         return this.categoryDAO.save(category);
     }
 

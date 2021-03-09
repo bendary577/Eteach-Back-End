@@ -2,7 +2,9 @@ package com.eteach.eteach.enums;
 
 public enum AccountType {
     STUDENT(0),
-    TEACHER(1);
+    TEACHER(1),
+    ADMIN(2),
+    ADMINTRAINEE(3);
 
     private final int accountCode;
 

@@ -4,7 +4,6 @@ import com.eteach.eteach.dao.CourseDAO;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.model.course.Course;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,7 @@ public class CourseService {
     private CourseDAO courseDAO;
 
     @Autowired
-    public CourseService(@Qualifier("coursedaoimp") CourseDAO courseDAO){
+    public CourseService(CourseDAO courseDAO){
         this.courseDAO = courseDAO;
     }
 
@@ -38,12 +37,18 @@ public class CourseService {
         return course;
     }
 
-    public List<Course> getAllCourses(Integer pageNo, Integer pageSize){
-        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("created_at"));
-        Page<Course> pagedResult = (Page<Course>) this.courseDAO.findAll(paging);
+    public List<Course> getCourses(Integer pageNo, Integer pageSize, String sortBy){
+        System.out.println("course service get courses 1");
+        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
+        System.out.println("paging : " + paging);
+        System.out.println("course service get courses 2");
+        Page<Course> pagedResult = this.courseDAO.findAll(paging);
+        System.out.println("course service get courses 3");
         if(pagedResult.hasContent()) {
+            System.out.println("course service get courses 4");
             return pagedResult.getContent();
         } else {
+            System.out.println("course service get courses 5");
             return new ArrayList<Course>();
         }
     }

@@ -5,6 +5,7 @@ import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.manyToManyRelations.CourseRating;
 import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -16,15 +17,9 @@ import java.util.Set;
 
 
 @Entity
-@Table(name="student_accounts")
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("student_account")
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 public class StudentAccount extends Account implements Serializable {
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
-    private Long id;
 
     @Column(length = 100)
     private String address;
@@ -38,16 +33,18 @@ public class StudentAccount extends Account implements Serializable {
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "course_id") }
     )
+    @JsonIgnoreProperties("students")
     Set<Course> courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnoreProperties("quizzes")
     Set<StudentQuiz> quizzes = new HashSet<>();
 
     @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonIgnoreProperties("ratings")
     Set<CourseRating> ratings = new HashSet<>();
-
 
     public StudentAccount() { }
 

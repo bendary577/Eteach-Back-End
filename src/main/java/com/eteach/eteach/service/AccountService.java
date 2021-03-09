@@ -50,7 +50,7 @@ public class AccountService {
     }
 
     public List<StudentAccount> getAllStudents(Integer pageNo, Integer pageSize) {
-        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("created_at"));
+        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("id"));
         Page<StudentAccount> pagedResult = (Page<StudentAccount>) this.studentDAO.findAll(paging);
         if(pagedResult.hasContent()) {
             return pagedResult.getContent();
@@ -72,12 +72,12 @@ public class AccountService {
 
     public TeacherAccount getTeacher(Long id){
         TeacherAccount teacherAccount =  this.teacherDAO.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Student", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher", "id", id));
         return teacherAccount;
     }
 
     public List<TeacherAccount> getAllTeachers(Integer pageNo, Integer pageSize){
-        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("created_at"));
+        Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("id"));
         Page<TeacherAccount> pagedResult = (Page<TeacherAccount>) this.teacherDAO.findAll(paging);
         if(pagedResult.hasContent()) {
             return pagedResult.getContent();

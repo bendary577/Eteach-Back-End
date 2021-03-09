@@ -1,6 +1,7 @@
 package com.eteach.eteach.model.account;
 
 import com.eteach.eteach.model.account.Account;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
@@ -44,6 +45,7 @@ public class User implements Serializable {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
+    @JsonIgnoreProperties("user")
     private Account account;
 
     private boolean enabled;

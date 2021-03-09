@@ -1,12 +1,16 @@
 package com.eteach.eteach.api.rest.course;
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.http.request.AddCourseRequest;
 import com.eteach.eteach.http.request.SubscribeToCourseRequest;
+import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.file.Video;
 import com.eteach.eteach.service.AccountService;
+import com.eteach.eteach.service.CategoryService;
 import com.eteach.eteach.service.CourseService;
 import com.eteach.eteach.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,22 +33,47 @@ public class CourseController {
     private final CourseService courseService;
     private final FileService fileService;
     private final AccountService accountService;
+    private final CategoryService categoryService;
 
     @Autowired
     public CourseController(CourseService courseService,
                             FileService fileService,
-                            AccountService accountService) {
+                            AccountService accountService,
+                            CategoryService categoryService) {
         this.courseService = courseService;
         this.fileService = fileService;
         this.accountService = accountService;
+        this.categoryService = categoryService;
     }
 
     /*------------------------------------ CREATE A NEW COURSE ---------------------------------------------- */
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ROLE_TEACHER')")
     @PostMapping("/")
-    public ResponseEntity<?> postCourse(@Valid @RequestBody Course course) {
+    public ResponseEntity<?> postCourse(@Valid @RequestBody AddCourseRequest addCourseRequest) {
+        //SET COURSE INFO
+        Course course = new Course();
+        course.setName(addCourseRequest.getName());
+        course.setDescription(addCourseRequest.getDescription());
+        course.setPrice(addCourseRequest.getPrice());
+        course.setDuration(addCourseRequest.getDuration());
+        course.setIntro(addCourseRequest.getIntro());
+        course.setGrade(addCourseRequest.getGrade());
+        course.setWhat_yow_will_learn(addCourseRequest.getWhat_yow_will_learn());
+        course.setDifficulty_level(addCourseRequest.getDifficulty_level());
+        //ASSIGN TO TEACHER
+        TeacherAccount teacher = accountService.getTeacher(addCourseRequest.getTeacherId());
+        course.setTeacher(teacher);
+        teacher.getCourses().add(course);
+        //ASSIGN TO CATEGORY
+        Category category = categoryService.getCategory(addCourseRequest.getCategoryId());
+        category.getCourses().add(course);
+        course.setCategory(category);
+        //SAVE INFO IN DATABASE
         this.courseService.saveCourse(course);
-        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course saved successfully"));
+        this.accountService.saveTeacher(teacher);
+        this.categoryService.saveCategory(category);
+        //RETURN API RESPONSE
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course saved successfully by :" + teacher.getUser().getUsername()));
     }
 
     /*------------------------------------ UPLOAD COURSE TRAILER VIDEO ------------------------------------- */
@@ -96,15 +125,16 @@ public class CourseController {
     }
 
     /*------------------------------------ GET ALL COURSES WITH PAGINATION ------------------------------ */
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER', 'ROLE_STUDENT')")
     @GetMapping("/")
     public List<Course> getAllCourses(@RequestParam(defaultValue = "0") Integer pageNo,
-                                      @RequestParam(defaultValue = "10") Integer pageSize) {
-        return courseService.getAllCourses(pageNo, pageSize);
+                                      @RequestParam(defaultValue = "10") Integer pageSize,
+                                      @RequestParam(defaultValue = "id") String sortBy) {
+        return courseService.getCourses(pageNo, pageSize, sortBy);
     }
 
     /*------------------------------------ GET A SINGLE COURSE ----------------------------------------- */
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER','ROLE_STUDENT')")
     @GetMapping("/{id}")
     public Course getCourse(@PathVariable(value = "id") Long id) {
         return courseService.getCourse(id);
@@ -114,7 +144,7 @@ public class CourseController {
     @PreAuthorize("hasRole('ROLE_STUDENT')")
     @PutMapping("rate/{id}")
     public void rateCourse(@PathVariable(value = "id") Long id,
-                             @Valid @RequestBody Course newCourse) {
+                           @Valid @RequestBody Course newCourse) {
         System.out.println("rate course");
     }
 
@@ -123,14 +153,17 @@ public class CourseController {
     @PutMapping("subscribe/{id}")
     public ResponseEntity<?> subscribeToCourse(@PathVariable(value = "id") Long id,
                                   @Valid @RequestBody SubscribeToCourseRequest subscribeToCourseRequest) {
+        System.out.println("student id :" + subscribeToCourseRequest.getStudentId());
         Long studentId = subscribeToCourseRequest.getStudentId();
-        Long courseId = subscribeToCourseRequest.getCourseId();
         StudentAccount student = accountService.getStudent(studentId);
         String studentUsername = student.getUser().getUsername();
-        Course course = courseService.getCourse(courseId);
+        Course course = courseService.getCourse(id);
         String courseName = course.getName();
         student.getCourses().add(course);
         course.getStudents().add(student);
+        course.setStudents_number(course.getStudents_number() + 1);
+        courseService.saveCourse(course);
+        accountService.saveStudent(student);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "student" + studentUsername + "subscribed to course" + courseName + "successfully"));
     }
 
