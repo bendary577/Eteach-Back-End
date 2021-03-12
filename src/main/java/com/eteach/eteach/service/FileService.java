@@ -31,7 +31,6 @@ public class FileService {
     private final ImageDAO imageDAO;
     private final MaterialDAO materialDAO;
     private FileStorageUtil fileStorageUtil;
-    private String path;
 
     @Autowired
     public FileService(FileDAO fileDAO,
@@ -48,17 +47,21 @@ public class FileService {
 
     /*--------------------------- STORE FILE IN FILESYSTEM ------------------------------------------*/
     public void saveFileInFileSystem(String fileName,
-                                MultipartFile multipartFile) throws IOException {
-        Path uploadPath = Paths.get(getPath());
+                                     MultipartFile multipartFile,
+                                     Path uploadPathDir) throws IOException {
 
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
+        if (!Files.exists(uploadPathDir)) {
+            System.out.println("path doesn't exist");
+            Files.createDirectories(uploadPathDir);
         }
-
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        System.out.println("path exists");
+        try{
+            byte[] bytes = multipartFile.getBytes();
+            Path filePath = uploadPathDir.resolve(fileName);
+            System.out.println("path is :" + filePath);
+            Files.write(filePath, bytes);
         } catch (IOException ioe) {
+            System.out.println("couldn't save file in file system");
             throw new FileStorageException("Could not save file: " + fileName);
         }
     }
@@ -70,39 +73,42 @@ public class FileService {
 
     /*--------------------------- CREATE NEW Video OBJECT IN DATABASE ----------------------------------*/
     @Transactional
-    public Video createVideoFile(MultipartFile multipartFile) throws IOException {
+    public Video createVideoFile(MultipartFile multipartFile, Path path) throws IOException {
         Video video = new Video();
         String fileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
         video.setName(fileName);
         //file.setExtension(FilenameUtils.getExtension(file.getName()));
         //SAVE FILE IN FILE SYSTEM
-        saveFileInFileSystem(fileName, multipartFile);
-        video.setPath(path);
+        saveFileInFileSystem(fileName, multipartFile, path);
+        video.setPath(path.toString());
         return videoDAO.save(video);
     }
     /*--------------------------- CREATE NEW Image OBJECT IN DATABASE ----------------------------------*/
     @Transactional
-    public Image createImageFile(MultipartFile multipartFile) throws IOException {
+    public Image createImageFile(MultipartFile multipartFile, Path path) throws IOException {
+        System.out.println("in create image file");
         Image image = new Image();
         String fileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
+        System.out.println("filename is :" + fileName);
         image.setName(fileName);
+        image.setPath(path.toString());
         //file.setExtension(FilenameUtils.getExtension(file.getName()));
         //SAVE FILE IN FILE SYSTEM
-        saveFileInFileSystem(fileName, multipartFile);
-        image.setPath(path);
+        saveFileInFileSystem(fileName, multipartFile, path);
+        System.out.println("image saved in file system");
         return imageDAO.save(image);
     }
 
     /*--------------------------- CREATE NEW Image OBJECT IN DATABASE ----------------------------------*/
     @Transactional
-    public Material createMaterialFile(MultipartFile multipartFile) throws IOException {
+    public Material createMaterialFile(MultipartFile multipartFile, Path path) throws IOException {
         Material material = new Material();
         String fileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
         material.setName(fileName);
         //file.setExtension(FilenameUtils.getExtension(file.getName()));
         //SAVE FILE IN FILE SYSTEM
-        saveFileInFileSystem(fileName, multipartFile);
-        material.setPath(path);
+        saveFileInFileSystem(fileName, multipartFile, path);
+        material.setPath(path.toString());
         return materialDAO.save(material);
     }
 
@@ -135,12 +141,4 @@ public class FileService {
         this.videoDAO.save(video);
     }
 
-    /*------------------------------- GETTERS AND SETTERS ----------------------------------------------*/
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
 }

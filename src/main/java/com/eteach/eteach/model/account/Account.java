@@ -1,10 +1,12 @@
 package com.eteach.eteach.model.account;
 
+import com.eteach.eteach.config.file.UserDataConfig;
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.notification.Notification;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.util.List;
@@ -34,6 +36,15 @@ public abstract class Account {
     @OneToMany(mappedBy="account",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     protected List<Notification> notifications;
+
+    private transient UserDataConfig userDataConfig = null;
+
+    @Autowired
+    public Account(UserDataConfig userDataConfig) {
+        this.userDataConfig = userDataConfig;
+    }
+
+    public Account(){}
 
     public void setId(Long id) {
         this.id = id;
@@ -78,8 +89,13 @@ public abstract class Account {
 
     @Transient
     public String getImagePath() {
-        if (image == null || this.id == null) return null;
-
-        return "/user-photos/" + this.id + "/" + image;
+        String path = new StringBuilder(userDataConfig.getAccountsDirectory())
+                .append(java.io.File.separator)
+                .append(this.id)
+                .append(java.io.File.separator)
+                .append("user_photos")
+                .append(java.io.File.separator).toString();
+        System.out.println("account image path is " + path );
+        return path;
     }
 }

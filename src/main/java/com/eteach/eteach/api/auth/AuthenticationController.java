@@ -2,14 +2,12 @@ package com.eteach.eteach.api.auth;
 
 import com.eteach.eteach.enums.AccountType;
 import com.eteach.eteach.enums.Grade;
-import com.eteach.eteach.http.request.signupRequest.StudentSignupRequest;
-import com.eteach.eteach.http.request.signupRequest.TeacherSignupRequest;
+import com.eteach.eteach.http.request.SubscribeToCourseRequest;
 import com.eteach.eteach.model.account.*;
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.http.response.JwtAuthenticationResponse;
 import com.eteach.eteach.http.request.LoginRequest;
-import com.eteach.eteach.http.request.signupRequest.SignUpRequest;
 import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
@@ -74,7 +72,7 @@ public class AuthenticationController {
             //GENERATE A NEW AUTH TOKEN FOR THE NEW USER
             String jwtToken = JwtTokenProvider.generateToken(authentication);
 
-            return ResponseEntity.ok(new JwtAuthenticationResponse(jwtToken, applicationUser.getUsername(), applicationUser.getAuthorities(), HttpStatus.OK, "logged in successfully "));
+            return ResponseEntity.ok(new JwtAuthenticationResponse(applicationUser.getUser().getId(),jwtToken, applicationUser.getUsername(), applicationUser.getAuthorities(), HttpStatus.OK, "logged in successfully "));
         }else{
             return ResponseEntity.ok(new ApiResponse(HttpStatus.UNAUTHORIZED, "username or password are invalid"));
         }
@@ -118,77 +116,79 @@ public class AuthenticationController {
     /*--------------------------------SIGNUP-------------------------------------------*/
     @PostMapping("/signup/")
 
-    public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
+    public ResponseEntity<?> signup(@Valid @RequestBody SubscribeToCourseRequest.SignUpRequest signUpRequest) {
         System.out.println("i'm in signup method");
         System.out.println("request username :" + signUpRequest.getUsername());
         System.out.println("request email :" + signUpRequest.getEmail());
         System.out.println("request password :" + signUpRequest.getPassword());
         System.out.println("request phone :" + signUpRequest.getPhone_number());
         System.out.println("request account type :" + signUpRequest.getAccountType());
+        System.out.println("request grade  :" + signUpRequest.getGrade());
+        System.out.println("request address  :" + signUpRequest.getAddress());
 
-        User user1 = applicationUserService.getUserByUsername(signUpRequest.getUsername());
-        System.out.println("after user 1");
-        User user2 = applicationUserService.getUserByEmail(signUpRequest.getEmail());
-        System.out.println("user 1 is :" + user1);
-        System.out.println("user 2 is :" + user2);
+        User application_user_1 = applicationUserService.getUserByUsername(signUpRequest.getUsername().trim());
+        User application_user_2 = applicationUserService.getUserByEmail(signUpRequest.getEmail().trim());
 
-        if(user1 != null) {
-            System.out.println("i'm in user1 ");
-            return new ResponseEntity(new ApiResponse(HttpStatus.IM_USED, "Username is already taken!"),
-                    HttpStatus.BAD_REQUEST);
+        if(application_user_1 != null) {
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.IM_USED, "Username is already taken!"));
         }
 
-        if(user2 != null){
-            System.out.println("i'm in user2 ");
-            return new ResponseEntity(new ApiResponse(HttpStatus.IM_USED, "email is already taken!"),
-                    HttpStatus.BAD_REQUEST);
+        if(application_user_2 != null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.IM_USED, "email is already taken!"));
         }
 
         //CREATE NEW USER INSTANCE
-        System.out.println("i'm creating user ");
         User user = new User(signUpRequest.getUsername(),
                              signUpRequest.getEmail(),
                              passwordEncoder.encode(signUpRequest.getPassword()),
                              signUpRequest.getPhone_number());
 
-        System.out.println("i created user method");
-
-        if(signUpRequest instanceof TeacherSignupRequest){
+        if(signUpRequest.getAccountType() == AccountType.TEACHER.getAccountCode()){
             System.out.println("request is teacher");
             TeacherAccount account = new TeacherAccount();
-            account.setSubject(((TeacherSignupRequest) signUpRequest).getSubject());
-            account.setFacebook_link(((TeacherSignupRequest) signUpRequest).getFacebook_link());
-            account.setTwitter_link(((TeacherSignupRequest) signUpRequest).getTwitter_link());
+            account.setSubject(signUpRequest.getSubject());
+            account.setFacebook_link(signUpRequest.getFacebook_link());
+            account.setTwitter_link(signUpRequest.getTwitter_link());
             user.setRole(TEACHER);
             user.setAccount(account);
             account.setUser(user);
+            User result = applicationUserService.createUser(user);
             accountService.saveTeacher(account);
-        }else if(signUpRequest instanceof StudentSignupRequest){
+        }else if(signUpRequest.getAccountType() == AccountType.STUDENT.getAccountCode()){
             System.out.println("request is student");
             StudentAccount account = new StudentAccount();
-            account.setAddress(((StudentSignupRequest) signUpRequest).getAddress());
             Grade studentGrade = null;
             for (Grade grade : Grade.values()) {
-                if(grade.toString().equals(((StudentSignupRequest) signUpRequest).getGrade())){
+                System.out.println(grade.toString());
+                if(grade.toString().equals(signUpRequest.getGrade())){
+                    System.out.println("grade is found ");
                     studentGrade = grade;
                 }
             }
-            account.setGrade(studentGrade);
+            System.out.println("address is " + signUpRequest.getAddress());
+            System.out.println("grade is " + signUpRequest.getGrade());
+
+            if(studentGrade != null) account.setGrade(studentGrade);
+            if(signUpRequest.getAddress() != null) account.setAddress(signUpRequest.getAddress());
+
             user.setRole(STUDENT);
             user.setAccount(account);
             account.setUser(user);
+            User result = applicationUserService.createUser(user);
             accountService.saveStudent(account);
-        } else {
+        } else if(signUpRequest.getAccountType() == AccountType.ADMIN.getAccountCode()){
             System.out.println("request is admin");
-           AdminAccount account = new AdminAccount();
-           user.setRole(ADMIN);
+            AdminAccount account = new AdminAccount();
+            user.setRole(ADMIN);
+            User result = applicationUserService.createUser(user);
+            //acount save admin
         }
 
         System.out.println("last signup");
         //SAVE THE NEW USER AND RETURN IT'S DETAILS
-        User result = applicationUserService.createUser(user);
 
-        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "user " + user.getUsername() +"registered successfully"));
+
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "user " + user.getUsername() +" registered successfully"));
     }
 
     /*-------------------------------- SEND RESET PASSWORD LINK ------------------------------*/
@@ -215,7 +215,7 @@ public class AuthenticationController {
     public ResponseEntity<?> refreshToken(HttpServletRequest request) throws Exception {
         ApplicationUser user = (ApplicationUser) request.getAttribute("user");
         String refreshedToken = JwtTokenProvider.generateRefreshToken(user);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(refreshedToken, user.getUsername(), user.getAuthorities(), HttpStatus.OK, "token refreshed successfully"));
+        return ResponseEntity.ok(new JwtAuthenticationResponse(user.getUser().getId(), refreshedToken, user.getUsername(), user.getAuthorities(), HttpStatus.OK, "token refreshed successfully"));
     }
 
 

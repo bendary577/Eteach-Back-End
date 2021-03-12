@@ -22,6 +22,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,9 +62,8 @@ public class LessonController {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "video is not valid"));
         }
 
-        String path = lesson.getVideoDirPath();
-        fileService.setPath(path);
-        Video lessonVideo = fileService.createVideoFile(video);
+        Path path = Paths.get(lesson.getVideoDirPath());
+        Video lessonVideo = fileService.createVideoFile(video, path);
         lesson.setVideo(lessonVideo);
 
         this.lessonService.saveLesson(lesson);
@@ -88,10 +89,9 @@ public class LessonController {
                     if (!fileService.validateMaterialFile(contentType, size)) {
                         System.out.println("material is not validated");
                     }
-                    String path = lesson.getMaterialDirPath();
-                    fileService.setPath(path);
+                    Path path = Paths.get(lesson.getMaterialDirPath());
                     try {
-                        Material lessonMaterial = fileService.createMaterialFile(material);
+                        Material lessonMaterial = fileService.createMaterialFile(material, path);
                         lesson.getMaterials().add(lessonMaterial);
                     } catch (IOException e) {
                         e.printStackTrace();

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
+import java.nio.file.Path;
 import java.util.Date;
 
 @MappedSuperclass
@@ -20,7 +21,7 @@ public abstract class File {
     @Column(length = 50)
     private String type;
 
-    @Column(length = 50)
+    @Column
     private String path;
 
     @Column(length = 50)

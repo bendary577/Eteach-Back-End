@@ -1,13 +1,20 @@
 package com.eteach.eteach.config.file;
 
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-@ConfigurationProperties(prefix = "user.data")
+@Configuration
 public class UserDataConfig {
 
+    @Value("${user.data.directoryPath}")
     private String directoryPath;
+
+    @Value("${user.data.coursesDirectory}")
     private String coursesDirectory;
+
+    @Value("${user.data.accountsDirectory}")
     private String accountsDirectory;
 
     public UserDataConfig(){}

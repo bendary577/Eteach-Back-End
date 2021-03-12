@@ -19,5 +19,15 @@
       "name": "redis.pass",
       "type": "java.lang.String",
       "description": "Description for redis.pass."
+    },
+    {
+      "name": "server.image.mime-types",
+      "type": "java.lang.String",
+      "description": "Description for server.image.mime-types."
+    },
+    {
+      "name": "image.available.mime-types",
+      "type": "java.lang.String",
+      "description": "Description for image.available.mime-types."
     }
   ] }

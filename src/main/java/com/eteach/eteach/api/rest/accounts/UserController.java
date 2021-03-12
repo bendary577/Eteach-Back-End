@@ -9,6 +9,7 @@ import com.eteach.eteach.http.response.profileResponse.TeacherProfileResponse;
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.model.account.*;
 import com.eteach.eteach.model.course.Category;
+import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
@@ -22,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 
 @RestController
 @RequestMapping(value ="/api/v1/user", produces = "application/json;charset=UTF-8")
@@ -52,14 +54,14 @@ public class UserController {
             Account account = currentUser.getAccount();
             //case user is teacher
             if(account instanceof TeacherAccount){
-                TeacherProfileResponse response = prepareTeacherAccount(username, account);
+                TeacherProfileResponse response = prepareTeacherAccount(currentUser.getId(), username, account);
                 return ResponseEntity.ok(response);
             }else if(account instanceof StudentAccount){
                 //case user is student
-               StudentProfileResponse response = prepareStudentProfile(username, account);
+               StudentProfileResponse response = prepareStudentProfile(currentUser.getId(), username, account);
                 return ResponseEntity.ok(response);
             }else if(account instanceof AdminAccount){
-                AdminProfileResponse response = prepareAdminProfile(username, account);
+                AdminProfileResponse response = prepareAdminProfile(currentUser.getId(), username, account);
                 return ResponseEntity.ok(response);
             }
 
@@ -102,41 +104,51 @@ public class UserController {
 
     //---------------------------------- Helper Functions -----------------------------------
 
-    public TeacherProfileResponse prepareTeacherAccount(String username, Account account){
+    public TeacherProfileResponse prepareTeacherAccount(Long id, String username, Account account){
         String accountType = "Teacher";
         String about = account.getAbout_description();
         String imagePath = account.getImagePath();
         Category subject = ((TeacherAccount) account).getSubject();
         String facebook_link = ((TeacherAccount) account).getFacebook_link();
         String twitter_link = ((TeacherAccount) account).getTwitter_link();
-        return new TeacherProfileResponse(HttpStatus.OK, "teacher account returned successfully", username,
+        return new TeacherProfileResponse(HttpStatus.OK, "teacher account returned successfully",id, username,
                 about, imagePath, accountType,facebook_link,
                 twitter_link, subject);
     }
 
-    public StudentProfileResponse prepareStudentProfile(String username, Account account){
+    public StudentProfileResponse prepareStudentProfile(Long id, String username, Account account){
         String accountType = "Student";
+        String imagePath = "";
         String about = account.getAbout_description();
-        String imagePath = account.getImagePath();
+        Image image = account.getImage();
+        if(image != null){
+            imagePath = new StringBuilder(account.getImage().getPath())
+            .append(File.separator)
+            .append(image.getName()).toString();
+        }
+        System.out.println("image full path is : " + imagePath);
         Grade grade = ((StudentAccount) account).getGrade();
         System.out.println("grade :" + grade);
-        String studentGrade = grade.toString();
-        System.out.println("grade name :" + studentGrade);
+        String studentGrade = "";
         String address = ((StudentAccount) account).getAddress();
+
         //--------- handle nulls
-        if(studentGrade == null) studentGrade = "";
+        if(grade != null){
+            System.out.println("grade name :" + studentGrade);
+            studentGrade = grade.toString();
+        }
         if(address == null) address = "";
         if(about == null) about = "";
         if(imagePath == null) imagePath = "";
         //---------- return responses
-        return new StudentProfileResponse(HttpStatus.OK, "student account returned successfully", username,
+        return new StudentProfileResponse(HttpStatus.OK, "student account returned successfully", id, username,
                 about, imagePath, accountType,studentGrade, address);
     }
-    public AdminProfileResponse prepareAdminProfile(String username, Account account){
+    public AdminProfileResponse prepareAdminProfile(Long id, String username, Account account){
         String accountType = "Admin";
         String about = account.getAbout_description();
         String imagePath = account.getImagePath();
-        return new AdminProfileResponse(HttpStatus.OK, "student account returned successfully", username,
+        return new AdminProfileResponse(HttpStatus.OK, "student account returned successfully",id, username,
                 about, imagePath, accountType);
     }
 

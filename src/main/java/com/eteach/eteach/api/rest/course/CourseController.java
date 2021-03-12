@@ -24,6 +24,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -55,8 +57,6 @@ public class CourseController {
         course.setName(addCourseRequest.getName());
         course.setDescription(addCourseRequest.getDescription());
         course.setPrice(addCourseRequest.getPrice());
-        course.setDuration(addCourseRequest.getDuration());
-        course.setIntro(addCourseRequest.getIntro());
         course.setGrade(addCourseRequest.getGrade());
         course.setWhat_yow_will_learn(addCourseRequest.getWhat_yow_will_learn());
         course.setDifficulty_level(addCourseRequest.getDifficulty_level());
@@ -93,9 +93,8 @@ public class CourseController {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "trailer video is not valid"));
         }
 
-        String path = course.getTrailerVideoDirPath();
-        fileService.setPath(path);
-        Video trailer_video = fileService.createVideoFile(video);
+        Path path = Paths.get(course.getTrailerVideoDirPath());
+        Video trailer_video = fileService.createVideoFile(video, path);
         course.setTrailer_video(trailer_video);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "trailer video uploaded successfully"));
     }
@@ -106,7 +105,6 @@ public class CourseController {
             MediaType.MULTIPART_FORM_DATA_VALUE,
             MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public ResponseEntity<?> uploadCourseThumbnail(@PathVariable(value = "id") Long id,
-                                                   @PathVariable(value = "type") String type,
                                                    @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile thumbnail) throws IOException {
         Course course = courseService.getCourse(id);
         String contentType = thumbnail.getContentType();
@@ -117,10 +115,11 @@ public class CourseController {
         if (!fileService.validateVideoFile(contentType, size)) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "thumbnail is not valid"));
         }
-        String path = course.getThumbnailDirPath();
-        fileService.setPath(path);
-        Image image = fileService.createImageFile(thumbnail);
+        Path path = Paths.get(course.getThumbnailDirPath());
+        Image image = fileService.createImageFile(thumbnail, path);
         course.setThumbnail(image);
+        image.setCourse(course);
+        courseService.saveCourse(course);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course thumbnail uploaded successfully"));
     }
 

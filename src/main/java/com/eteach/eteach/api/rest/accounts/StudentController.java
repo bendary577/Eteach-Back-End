@@ -1,23 +1,35 @@
 package com.eteach.eteach.api.rest.accounts;
 
+import com.eteach.eteach.config.file.UserDataConfig;
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
+import com.eteach.eteach.model.file.File;
+import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.eteach.eteach.model.quiz.Quiz;
 import com.eteach.eteach.service.AccountService;
+import com.eteach.eteach.service.FileService;
 import com.eteach.eteach.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.ServletContext;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(value ="/api/v1/students", produces = "application/json;charset=UTF-8")
@@ -25,12 +37,18 @@ public class StudentController {
 
     private final QuizService quizService;
     private final AccountService accountService;
+    private final FileService fileService;
+    private final ServletContext context;
 
     @Autowired
     public StudentController(AccountService accountService,
-                             QuizService quizService){
+                             QuizService quizService,
+                             FileService fileService,
+                             ServletContext context){
         this.accountService = accountService;
         this.quizService = quizService;
+        this.fileService = fileService;
+        this.context = context;
     }
 
     //-------------------------- CREATE A NEW STUDENT ------------------------------------------------
@@ -43,18 +61,33 @@ public class StudentController {
 
     //---------------------------- UPLOAD STUDENT IMAGE PROFILE --------------------------------------
     @PreAuthorize("hasRole('ROLE_STUDENT')")
-    @PostMapping("/upload/{id}/image/")
-    public String uploadImage(@PathVariable(value = "id") Long id, @Valid @NotNull @NotEmpty @RequestParam("image") MultipartFile image) throws IOException {
-        StudentAccount studentAccount = accountService.getStudent(id);
-        if(studentAccount == null){
-            throw new ResourceNotFoundException("StudentAccount", "id", id);
+    @PostMapping(value = "/upload/{id}/image/",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<?> uploadImage(@PathVariable Long id, @Valid @NotNull @NotEmpty @RequestPart("user_photo") MultipartFile profileImage) throws IOException {
+        if(profileImage == null){
+            System.out.println("image is null");
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error, we can't process image"));
         }
-        String fileName = StringUtils.cleanPath(image.getOriginalFilename());
-        //studentAccount.setImage(fileName);
-        String imageUploadDirectory = "user-photos/" + studentAccount.getId();
-       // FileUpload.saveFile(imageUploadDirectory, fileName, image);
+        StudentAccount studentAccount = accountService.getStudent(id);
+        System.out.println("i'm in upload profile image rest api");
+        if(studentAccount == null){
+            System.out.println("student account is null");
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error, we can't find the requested account"));
+        }
+        String contentType = profileImage.getContentType();
+        Long size = profileImage.getSize();
+        if (!fileService.validateImageFile(contentType, size)) {
+            System.out.println("profile image validation failed");
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "profile image is not valid"));
+        }
+        Path path = Paths.get("src","main","resources", "data", "accounts", studentAccount.getId().toString());
+        String absolutePath = path.toFile().getAbsolutePath();
+        System.out.println("student image path is : " + path);
+            System.out.println("student image absolute path is : " + absolutePath);
+        Image image = fileService.createImageFile(profileImage, path);
+        System.out.println("image created successfully");
+        studentAccount.setImage(image);
         this.accountService.saveStudent(studentAccount);
-        return "saved";
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "profile image uploaded successfully TO PATH : " + studentAccount.getImage().getPath() + " with name" + studentAccount.getImage().getName() ));
     }
 
     //----------------------------- GET ALL STUDENT ACCOUNTS WITH PAGINATION -----------------------------

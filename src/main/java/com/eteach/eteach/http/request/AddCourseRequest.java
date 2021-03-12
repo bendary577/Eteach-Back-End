@@ -9,8 +9,6 @@ public class AddCourseRequest {
     private String name;
     private String description;
     private float price;
-    private String duration;
-    private String intro;
     private Grade grade;
     private String what_yow_will_learn;
     private LevelOfDifficulty difficulty_level;
@@ -18,12 +16,10 @@ public class AddCourseRequest {
     private Long categoryId;
 
     public AddCourseRequest(){}
-    public AddCourseRequest(String name, String description, float price, String duration, String intro, Grade grade, String what_yow_will_learn, LevelOfDifficulty difficulty_level, Long teacherId) {
+    public AddCourseRequest(String name, String description, float price, Grade grade, String what_yow_will_learn, LevelOfDifficulty difficulty_level, Long teacherId) {
         this.name = name;
         this.description = description;
         this.price = price;
-        this.duration = duration;
-        this.intro = intro;
         this.grade = grade;
         this.what_yow_will_learn = what_yow_will_learn;
         this.difficulty_level = difficulty_level;
@@ -52,22 +48,6 @@ public class AddCourseRequest {
 
     public void setPrice(float price) {
         this.price = price;
-    }
-
-    public String getDuration() {
-        return duration;
-    }
-
-    public void setDuration(String duration) {
-        this.duration = duration;
-    }
-
-    public String getIntro() {
-        return intro;
-    }
-
-    public void setIntro(String intro) {
-        this.intro = intro;
     }
 
     public Grade getGrade() {

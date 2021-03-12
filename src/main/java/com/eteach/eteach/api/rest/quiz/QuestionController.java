@@ -19,6 +19,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
@@ -54,10 +56,9 @@ public class QuestionController {
             if (!fileService.validateVideoFile(contentType, size)) {
                 return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "thumbnail is not valid"));
             }
-            String path = question.getImageDirPath();
-            fileService.setPath(path);
+            Path path = Paths.get(question.getImageDirPath());
             //create image object
-            Image questionImage = fileService.createImageFile(image);
+            Image questionImage = fileService.createImageFile(image, path);
             //assign question to image and vice versa
             questionImage.setQuestion(question);
             question.setImage(questionImage);

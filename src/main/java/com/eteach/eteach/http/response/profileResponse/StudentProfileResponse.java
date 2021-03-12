@@ -11,13 +11,14 @@ public class StudentProfileResponse extends UserProfileResponse{
 
     public StudentProfileResponse(HttpStatus status,
                                   String message,
+                                  Long id,
                                   String username,
                                   String about,
                                   String imagePath,
                                   String accountType,
                                   String grade,
                                   String address){
-        super(status, message, username, about, imagePath, accountType);
+        super(status, message,id, username, about, imagePath, accountType);
         this.grade = grade;
         this.address = address;
     }

@@ -9,11 +9,12 @@ public class AdminProfileResponse extends UserProfileResponse{
 
     public AdminProfileResponse(HttpStatus status,
                                   String message,
+                                  Long id,
                                   String username,
                                   String about,
                                   String imagePath,
                                   String accountType){
-        super(status, message, username, about, imagePath, accountType);
+        super(status, message, id, username, about, imagePath, accountType);
     }
 
 

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 
 public class UserProfileResponse extends ApiResponse {
 
+    private Long id;
     private String username;
     private String about;
     private String imagePath;
@@ -16,11 +17,13 @@ public class UserProfileResponse extends ApiResponse {
 
     public UserProfileResponse(HttpStatus status,
                                String message,
+                               Long id,
                                String username,
                                String about,
                                String imagePath,
                                String accountType){
         super(status, message);
+        this.id = id;
         this.username = username;
         this.about = about;
         this.imagePath = imagePath;
@@ -57,5 +60,13 @@ public class UserProfileResponse extends ApiResponse {
 
     public void setAccountType(String accountType) {
         this.accountType = accountType;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

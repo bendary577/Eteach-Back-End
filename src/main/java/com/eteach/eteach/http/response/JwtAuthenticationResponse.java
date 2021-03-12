@@ -7,17 +7,20 @@ import java.io.Serializable;
 import java.util.Set;
 
 public class JwtAuthenticationResponse extends ApiResponse implements Serializable {
+    private Long id;
     private String accessToken;
     private String tokenType = "Bearer";
     private String username;
     private Set<? extends GrantedAuthority> grantedAuthorities;
 
-    public JwtAuthenticationResponse(String accessToken,
+    public JwtAuthenticationResponse(Long id,
+                                     String accessToken,
                                      String username,
                                      Set<? extends GrantedAuthority> grantedAuthorities,
                                      HttpStatus status,
                                      String message) {
         super(status, message);
+        this.id = id;
         this.accessToken = accessToken;
         this.username = username;
         this.grantedAuthorities = grantedAuthorities;
@@ -55,4 +58,11 @@ public class JwtAuthenticationResponse extends ApiResponse implements Serializab
         this.tokenType = tokenType;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

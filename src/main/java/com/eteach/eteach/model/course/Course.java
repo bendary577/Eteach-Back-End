@@ -52,13 +52,6 @@ public class Course implements Serializable {
     @Column(nullable = false)
     private float price;
 
-    @NotBlank
-    @Column(nullable = false, length = 80)
-    private String duration;
-
-    @Column(nullable = false, length = 80)
-    private String intro;
-
     @Column(nullable = false, length = 50)
     private Grade grade;
 
@@ -148,16 +141,12 @@ public class Course implements Serializable {
     public Course(@JsonProperty("name") String name,
                   @JsonProperty("description") String description,
                   @JsonProperty("price") float price,
-                  @JsonProperty("duration") String duration,
-                  @JsonProperty("intro") String intro,
                   @JsonProperty("grade") Grade grade,
                   @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
                   @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level){
         this.name = name;
         this.description = description;
         this.price = price;
-        this.duration = duration;
-        this.intro = intro;
         this.grade = grade;
         this.what_yow_will_learn = what_yow_will_learn;
         this.difficulty_level = difficulty_level;
@@ -218,22 +207,6 @@ public class Course implements Serializable {
 
     public void setTrailer_video(Video trailer_video) {
         this.trailer_video = trailer_video;
-    }
-
-    public String getDuration() {
-        return duration;
-    }
-
-    public void setDuration(String duration) {
-        this.duration = duration;
-    }
-
-    public String getIntro() {
-        return intro;
-    }
-
-    public void setIntro(String intro) {
-        this.intro = intro;
     }
 
     public Image getThumbnail() {

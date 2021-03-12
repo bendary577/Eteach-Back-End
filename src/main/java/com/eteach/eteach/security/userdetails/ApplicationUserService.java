@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 
 @Service
 public class ApplicationUserService implements UserDetailsService {
@@ -42,24 +44,16 @@ public class ApplicationUserService implements UserDetailsService {
     @Transactional
     public User getUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println("in get by username");
-        User user = applicationUserDao
-                .findUserByUsername(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format("Username %s not found", username)));
-        System.out.println("found user");
-        System.out.println(" user username is :" + user.getUsername());
-        return user;
-    }
-    /*-------------------------------------- GET USER BY EMAIL -----------------------------------------*/
-    @Transactional
-    public User getUserByEmail(String username) throws UsernameNotFoundException {
-        User user = applicationUserDao
-                .findUserByEmail(username)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format("Username %s not found", username)));
-        return user;
+        Optional<User> user = applicationUserDao.findUserByUsername(username);
+        return user.orElse(null);
     }
 
+    /*-------------------------------------- GET USER BY EMAIL -----------------------------------------*/
+    @Transactional
+    public User getUserByEmail(String email) throws UsernameNotFoundException {
+        Optional<User> user = applicationUserDao.findUserByEmail(email);
+        return user.orElse(null);
+    }
 
     /*-------------------------------------- CREATE NEW USER -----------------------------------------*/
     public User createUser(User user) {

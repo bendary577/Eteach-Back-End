@@ -17,7 +17,7 @@ public class FileStorageUtil {
     @Value("${server.compression.mime-types}")
     private List<String> contentVideos;
 
-    @Value("${server.compression.mime-types}")
+    @Value("${image.available.mime-types}")
     private List<String> contentImages;
 
     @Value("${server.compression.mime-types}")
