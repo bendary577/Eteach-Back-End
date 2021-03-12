@@ -29,7 +29,7 @@ public class NotificationService {
     //------------------------------- NOTIFY AFTER NEW QUIZ ADDED ---------------------------
     // Spring will automatically prepend "/user/" to destination => "/user/notify"
     public void notifyAfterNewQuizAdded(Notification notification, String username) {
-        Optional<User> applicationUser = userDao.findByUsername(username);
+        Optional<User> applicationUser = userDao.findUserByUsername(username);
         if(applicationUser.isPresent()){
             User user = applicationUser.get();
             Account account = user.getAccount();
@@ -40,7 +40,7 @@ public class NotificationService {
 
     //------------------------------- NOTIFY AFTER QUIZ RESULTS FINISHED ---------------------------
     public void notifyAfterQuizResult(Notification notification, String username) {
-        Optional<User> user = userDao.findByUsername(username);
+        Optional<User> user = userDao.findUserByUsername(username);
         messagingTemplate.convertAndSendToUser(username, "/queue/quiz-result-finished", notification);
     }
 

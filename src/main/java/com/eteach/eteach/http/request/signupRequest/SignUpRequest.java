@@ -1,4 +1,4 @@
-package com.eteach.eteach.http.request;
+package com.eteach.eteach.http.request.signupRequest;
 
 import com.eteach.eteach.enums.AccountType;
 
@@ -28,6 +28,16 @@ public class SignUpRequest implements Serializable {
 
     @NotNull
     private int accountType;
+
+    public SignUpRequest(){}
+
+    public SignUpRequest(@NotBlank @Size(min = 3, max = 15) String username, @NotBlank @Size(max = 40) @Email String email, @NotBlank @Size(min = 6, max = 20) String password, @NotBlank @Size(min = 6, max = 20) String phone_number, @NotNull int accountType) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.phone_number = phone_number;
+        this.accountType = accountType;
+    }
 
     public String getPhone_number() {
         return phone_number;

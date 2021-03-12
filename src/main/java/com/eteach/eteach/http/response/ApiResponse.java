@@ -3,8 +3,11 @@ package com.eteach.eteach.http.response;
 import org.springframework.http.HttpStatus;
 
 public class ApiResponse {
+
     private HttpStatus status;
     private String message;
+
+    public ApiResponse(){}
 
     public ApiResponse(HttpStatus status, String message) {
         this.status = status;

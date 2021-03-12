@@ -1,11 +1,12 @@
 package com.eteach.eteach.http.response;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.io.Serializable;
 import java.util.Set;
 
-public class JwtAuthenticationResponse implements Serializable {
+public class JwtAuthenticationResponse extends ApiResponse implements Serializable {
     private String accessToken;
     private String tokenType = "Bearer";
     private String username;
@@ -13,7 +14,10 @@ public class JwtAuthenticationResponse implements Serializable {
 
     public JwtAuthenticationResponse(String accessToken,
                                      String username,
-                                     Set<? extends GrantedAuthority> grantedAuthorities ) {
+                                     Set<? extends GrantedAuthority> grantedAuthorities,
+                                     HttpStatus status,
+                                     String message) {
+        super(status, message);
         this.accessToken = accessToken;
         this.username = username;
         this.grantedAuthorities = grantedAuthorities;
@@ -50,4 +54,5 @@ public class JwtAuthenticationResponse implements Serializable {
     public void setTokenType(String tokenType) {
         this.tokenType = tokenType;
     }
+
 }

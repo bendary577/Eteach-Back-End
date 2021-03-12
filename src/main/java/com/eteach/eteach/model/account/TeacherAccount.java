@@ -15,9 +15,6 @@ import java.util.List;
 @DiscriminatorValue("teacher_account")
 public class TeacherAccount extends Account implements Serializable {
 
-    @Column(length = 100)
-    private String about_description;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "subject_id", referencedColumnName = "id")
     private Category subject;
@@ -34,11 +31,9 @@ public class TeacherAccount extends Account implements Serializable {
 
     public TeacherAccount() { }
 
-    public TeacherAccount(@JsonProperty("about") String about_description,
-                          @JsonProperty("subject") Category subject,
+    public TeacherAccount(@JsonProperty("subject") Category subject,
                           @JsonProperty("facebook_link") String facebook_link,
                           @JsonProperty("twitter_link") String twitter_link){
-        this.about_description = about_description;
         this.subject = subject;
         this.facebook_link = facebook_link;
         this.twitter_link = twitter_link;
@@ -59,14 +54,6 @@ public class TeacherAccount extends Account implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getAbout_description() {
-        return about_description;
-    }
-
-    public void setAbout_description(String about_description) {
-        this.about_description = about_description;
     }
 
     public Category getSubject() {

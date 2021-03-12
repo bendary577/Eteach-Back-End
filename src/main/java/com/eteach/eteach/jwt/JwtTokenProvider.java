@@ -55,9 +55,13 @@ public class JwtTokenProvider {
     /*--------------------------------- EXTRACTS TOKEN FROM REQUEST --------------------------------------*/
     public String getJwtFromRequest(HttpServletRequest request) {
         String authHeader = request.getHeader(jwtConfig.getAuthorizationHeader());
+        System.out.println("auth header is :" + authHeader);
+        System.out.println("jwt token is being prepared");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            System.out.println("jwt token is valid");
             return authHeader.replace("Bearer ", "");
         }else{
+            System.out.println("jwt token is not valid and is null");
             return null;
         }
     }
@@ -92,6 +96,7 @@ public class JwtTokenProvider {
             logger.error("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
             logger.error("Expired JWT token");
+            //set httpservlet request to be automatically refresh token
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             ApplicationUser user = (ApplicationUser) auth.getPrincipal();
             String isRefreshToken = request.getHeader("isRefreshToken");

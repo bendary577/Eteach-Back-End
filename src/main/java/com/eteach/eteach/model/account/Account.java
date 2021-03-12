@@ -20,6 +20,9 @@ public abstract class Account {
     @Column(name = "id", updatable = false, nullable = false)
     protected Long id;
 
+    @Column(length = 100)
+    private String about_description;
+
     @OneToOne(mappedBy = "account")
     @JsonIgnoreProperties("account")
     protected User user;
@@ -38,6 +41,15 @@ public abstract class Account {
 
     public Long getId() {
         return id;
+    }
+
+
+    public String getAbout_description() {
+        return about_description;
+    }
+
+    public void setAbout_description(String about_description) {
+        this.about_description = about_description;
     }
 
     public User getUser() {

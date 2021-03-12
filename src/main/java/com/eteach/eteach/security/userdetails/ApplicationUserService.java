@@ -31,7 +31,7 @@ public class ApplicationUserService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = applicationUserDao
-                .findByUsername(username)
+                .findUserByUsername(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format("Username %s not found", username)));
         return ApplicationUser.create(user);
@@ -41,17 +41,20 @@ public class ApplicationUserService implements UserDetailsService {
     /*-------------------------------------- GET USER BY USERNAME -----------------------------------------*/
     @Transactional
     public User getUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("in get by username");
         User user = applicationUserDao
-                .findByUsername(username)
+                .findUserByUsername(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format("Username %s not found", username)));
+        System.out.println("found user");
+        System.out.println(" user username is :" + user.getUsername());
         return user;
     }
     /*-------------------------------------- GET USER BY EMAIL -----------------------------------------*/
     @Transactional
-    public User getUserByemail(String username) throws UsernameNotFoundException {
+    public User getUserByEmail(String username) throws UsernameNotFoundException {
         User user = applicationUserDao
-                .findByEmail(username)
+                .findUserByEmail(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format("Username %s not found", username)));
         return user;

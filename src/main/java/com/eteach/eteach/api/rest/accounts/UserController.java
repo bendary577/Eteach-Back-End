@@ -1,15 +1,21 @@
 package com.eteach.eteach.api.rest.accounts;
 
+import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.http.request.UpdatePasswordRequest;
 import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.http.response.profileResponse.AdminProfileResponse;
+import com.eteach.eteach.http.response.profileResponse.StudentProfileResponse;
+import com.eteach.eteach.http.response.profileResponse.TeacherProfileResponse;
 import com.eteach.eteach.jwt.JwtTokenProvider;
-import com.eteach.eteach.model.account.User;
+import com.eteach.eteach.model.account.*;
+import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,11 +43,29 @@ public class UserController {
     //---------------- RETURNS THE CURRENT USER PROFILE OF THE LOGGED IN USER ----------------
     @GetMapping("/me/")
     @PreAuthorize("hasAnyRole('STUDENT','TEACHER','ADMIN','ADMINTRAINEE')")
-    public User getUserProfile() {
+    public ResponseEntity getUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        User currentUser = userService.getUserByUsername(username);
-        return currentUser;
+        if(authentication != null){
+            String username = authentication.getName();
+            User currentUser = userService.getUserByUsername(username);
+            System.out.println("current username is " + currentUser.getUsername());
+            Account account = currentUser.getAccount();
+            //case user is teacher
+            if(account instanceof TeacherAccount){
+                TeacherProfileResponse response = prepareTeacherAccount(username, account);
+                return ResponseEntity.ok(response);
+            }else if(account instanceof StudentAccount){
+                //case user is student
+               StudentProfileResponse response = prepareStudentProfile(username, account);
+                return ResponseEntity.ok(response);
+            }else if(account instanceof AdminAccount){
+                AdminProfileResponse response = prepareAdminProfile(username, account);
+                return ResponseEntity.ok(response);
+            }
+
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"user " + currentUser.getUsername() + "is logged id"));
+        }
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"please login"));
     }
 
     //--------------------------- LOGOUT THE CURRENT USER ------------------------------------
@@ -72,6 +96,51 @@ public class UserController {
         userService.updateUserPassword(currentUser, updatePasswordRequest);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK,"updated password successfully"));
     }
+
+    //--------------------------------- UPDATE ACCOUNT INFO ---------------------------------
+
+
+    //---------------------------------- Helper Functions -----------------------------------
+
+    public TeacherProfileResponse prepareTeacherAccount(String username, Account account){
+        String accountType = "Teacher";
+        String about = account.getAbout_description();
+        String imagePath = account.getImagePath();
+        Category subject = ((TeacherAccount) account).getSubject();
+        String facebook_link = ((TeacherAccount) account).getFacebook_link();
+        String twitter_link = ((TeacherAccount) account).getTwitter_link();
+        return new TeacherProfileResponse(HttpStatus.OK, "teacher account returned successfully", username,
+                about, imagePath, accountType,facebook_link,
+                twitter_link, subject);
+    }
+
+    public StudentProfileResponse prepareStudentProfile(String username, Account account){
+        String accountType = "Student";
+        String about = account.getAbout_description();
+        String imagePath = account.getImagePath();
+        Grade grade = ((StudentAccount) account).getGrade();
+        System.out.println("grade :" + grade);
+        String studentGrade = grade.toString();
+        System.out.println("grade name :" + studentGrade);
+        String address = ((StudentAccount) account).getAddress();
+        //--------- handle nulls
+        if(studentGrade == null) studentGrade = "";
+        if(address == null) address = "";
+        if(about == null) about = "";
+        if(imagePath == null) imagePath = "";
+        //---------- return responses
+        return new StudentProfileResponse(HttpStatus.OK, "student account returned successfully", username,
+                about, imagePath, accountType,studentGrade, address);
+    }
+    public AdminProfileResponse prepareAdminProfile(String username, Account account){
+        String accountType = "Admin";
+        String about = account.getAbout_description();
+        String imagePath = account.getImagePath();
+        return new AdminProfileResponse(HttpStatus.OK, "student account returned successfully", username,
+                about, imagePath, accountType);
+    }
+
+
 
 
 }

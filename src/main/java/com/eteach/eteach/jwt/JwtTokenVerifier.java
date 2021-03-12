@@ -36,6 +36,7 @@ public class JwtTokenVerifier extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
         if ("/api/v1/auth/signup/".equals(path) || "/api/v1/auth/signin/".equals(path)) {
+            System.out.println("i'm going to auth api");
             filterChain.doFilter(request, response);
             return;
         }

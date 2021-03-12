@@ -25,7 +25,7 @@ public class CategoryController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
     @PostMapping("/")
     public String postCategory(@Valid @RequestBody Category category){
-        this.categoryService.createCategory(category);
+        this.categoryService.saveCategory(category);
         return "saved";
     }
 
