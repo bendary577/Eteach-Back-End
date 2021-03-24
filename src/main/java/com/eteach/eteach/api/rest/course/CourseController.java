@@ -58,14 +58,14 @@ public class CourseController {
         course.setDescription(addCourseRequest.getDescription());
         course.setPrice(addCourseRequest.getPrice());
         course.setGrade(addCourseRequest.getGrade());
-        course.setWhat_yow_will_learn(addCourseRequest.getWhat_yow_will_learn());
+        //course.setWhat_yow_will_learn(addCourseRequest.getWhat_yow_will_learn());
         course.setDifficulty_level(addCourseRequest.getDifficulty_level());
         //ASSIGN TO TEACHER
         TeacherAccount teacher = accountService.getTeacher(addCourseRequest.getTeacherId());
         course.setTeacher(teacher);
         teacher.getCourses().add(course);
         //ASSIGN TO CATEGORY
-        Category category = categoryService.getCategory(addCourseRequest.getCategoryId());
+        Category category = categoryService.getCategoryByName(addCourseRequest.getCategory());
         category.getCourses().add(course);
         course.setCategory(category);
         //SAVE INFO IN DATABASE

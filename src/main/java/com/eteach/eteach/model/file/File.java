@@ -21,7 +21,7 @@ public abstract class File {
     @Column(length = 50)
     private String type;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String path;
 
     @Column(length = 50)
@@ -112,6 +112,5 @@ public abstract class File {
     public void setUpdated_at(Date updated_at) {
         this.updated_at = updated_at;
     }
-
 
 }

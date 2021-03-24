@@ -38,17 +38,12 @@ public class CourseService {
     }
 
     public List<Course> getCourses(Integer pageNo, Integer pageSize, String sortBy){
-        System.out.println("course service get courses 1");
         Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
         System.out.println("paging : " + paging);
-        System.out.println("course service get courses 2");
         Page<Course> pagedResult = this.courseDAO.findAll(paging);
-        System.out.println("course service get courses 3");
         if(pagedResult.hasContent()) {
-            System.out.println("course service get courses 4");
             return pagedResult.getContent();
         } else {
-            System.out.println("course service get courses 5");
             return new ArrayList<Course>();
         }
     }

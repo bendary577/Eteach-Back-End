@@ -1,5 +1,6 @@
-package com.eteach.eteach.http.response;
+package com.eteach.eteach.http.response.authResponse;
 
+import com.eteach.eteach.http.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 

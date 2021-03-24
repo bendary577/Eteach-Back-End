@@ -16,9 +16,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @EnableCaching
 public class EteachApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(EteachApplication.class, args);
     }
-
 }

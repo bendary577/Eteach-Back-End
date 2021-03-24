@@ -2,6 +2,7 @@ package com.eteach.eteach.model.account;
 
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -15,10 +16,6 @@ import java.util.List;
 @DiscriminatorValue("teacher_account")
 public class TeacherAccount extends Account implements Serializable {
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "subject_id", referencedColumnName = "id")
-    private Category subject;
-
     @Column
     private String facebook_link;
 
@@ -28,6 +25,11 @@ public class TeacherAccount extends Account implements Serializable {
     @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Course> courses;
+
+    @JsonIgnoreProperties("subject")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id", referencedColumnName = "id")
+    private Category subject;
 
     public TeacherAccount() { }
 

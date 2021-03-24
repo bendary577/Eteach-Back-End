@@ -2,6 +2,7 @@ package com.eteach.eteach.model.course;
 
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.manyToManyRelations.CourseRating;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -29,13 +30,15 @@ public class Category implements Serializable {
     @Column(nullable = false, length = 100)
     private String description;
 
+    @JsonIgnoreProperties("courses")
     @OneToMany(mappedBy="category",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     private List<Course> courses;
 
-    @OneToOne(mappedBy = "subject")
-    private TeacherAccount teacher;
-
+    @JsonIgnoreProperties("teachers")
+    @OneToMany(mappedBy="subject",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    private List<TeacherAccount> teachers;
 
     public Category() { }
 
@@ -79,11 +82,11 @@ public class Category implements Serializable {
         this.courses = courses;
     }
 
-    public TeacherAccount getTeacher() {
-        return teacher;
+    public List<TeacherAccount> getTeachers() {
+        return teachers;
     }
 
-    public void setTeacher(TeacherAccount teacher) {
-        this.teacher = teacher;
+    public void setTeacher(List<TeacherAccount> teachers) {
+        this.teachers = teachers;
     }
 }

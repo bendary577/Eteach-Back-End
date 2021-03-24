@@ -4,19 +4,22 @@ import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public class AddCourseRequest {
 
     private String name;
     private String description;
     private float price;
     private Grade grade;
-    private String what_yow_will_learn;
+    private List<String> what_yow_will_learn;
     private LevelOfDifficulty difficulty_level;
     private Long teacherId;
-    private Long categoryId;
+    private String category;
 
     public AddCourseRequest(){}
-    public AddCourseRequest(String name, String description, float price, Grade grade, String what_yow_will_learn, LevelOfDifficulty difficulty_level, Long teacherId) {
+
+    public AddCourseRequest(String name, String description, float price, Grade grade, List<String> what_yow_will_learn, LevelOfDifficulty difficulty_level, Long teacherId, String category) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -24,6 +27,7 @@ public class AddCourseRequest {
         this.what_yow_will_learn = what_yow_will_learn;
         this.difficulty_level = difficulty_level;
         this.teacherId = teacherId;
+        this.category = category;
     }
 
     public String getName() {
@@ -58,11 +62,11 @@ public class AddCourseRequest {
         this.grade = grade;
     }
 
-    public String getWhat_yow_will_learn() {
+    public List<String> getWhat_yow_will_learn() {
         return what_yow_will_learn;
     }
 
-    public void setWhat_yow_will_learn(String what_yow_will_learn) {
+    public void setWhat_yow_will_learn(List<String> what_yow_will_learn) {
         this.what_yow_will_learn = what_yow_will_learn;
     }
 
@@ -82,11 +86,11 @@ public class AddCourseRequest {
         teacherId = teacherId;
     }
 
-    public Long getCategoryId() {
-        return categoryId;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

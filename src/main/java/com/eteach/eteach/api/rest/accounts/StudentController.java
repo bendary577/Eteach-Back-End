@@ -64,22 +64,18 @@ public class StudentController {
     @PostMapping(value = "/upload/{id}/image/",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> uploadImage(@PathVariable Long id, @Valid @NotNull @NotEmpty @RequestPart("user_photo") MultipartFile profileImage) throws IOException {
         if(profileImage == null){
-            System.out.println("image is null");
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error, we can't process image"));
         }
         StudentAccount studentAccount = accountService.getStudent(id);
-        System.out.println("i'm in upload profile image rest api");
         if(studentAccount == null){
-            System.out.println("student account is null");
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error, we can't find the requested account"));
         }
         String contentType = profileImage.getContentType();
         Long size = profileImage.getSize();
         if (!fileService.validateImageFile(contentType, size)) {
-            System.out.println("profile image validation failed");
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "profile image is not valid"));
         }
-        Path path = Paths.get("src","main","resources", "data", "accounts", studentAccount.getId().toString());
+        Path path = Paths.get("D:", "projects","E-Teach - Front End","dist","assets", "images", "accounts", studentAccount.getId().toString());
         String absolutePath = path.toFile().getAbsolutePath();
         System.out.println("student image path is : " + path);
             System.out.println("student image absolute path is : " + absolutePath);

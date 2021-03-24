@@ -2,16 +2,18 @@ package com.eteach.eteach.api.auth;
 
 import com.eteach.eteach.enums.AccountType;
 import com.eteach.eteach.enums.Grade;
-import com.eteach.eteach.http.request.SubscribeToCourseRequest;
+import com.eteach.eteach.http.request.SignUpRequest;
 import com.eteach.eteach.model.account.*;
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.http.response.ApiResponse;
-import com.eteach.eteach.http.response.JwtAuthenticationResponse;
+import com.eteach.eteach.http.response.authResponse.JwtAuthenticationResponse;
 import com.eteach.eteach.http.request.LoginRequest;
+import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.redis.RedisService;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import com.eteach.eteach.service.AccountService;
+import com.eteach.eteach.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,19 +41,23 @@ public class AuthenticationController {
     public final ApplicationUserService applicationUserService;
     public final RedisService redisService;
     private final AccountService accountService;
+    private final CategoryService categoryService;
+
     @Autowired
     public AuthenticationController(AuthenticationManager authenticationManager,
                                    PasswordEncoder passwordEncoder,
                                    JwtTokenProvider JwtTokenProvider,
                                    ApplicationUserService applicationUserService,
                                     RedisService redisService,
-                                    AccountService accountService) {
+                                    AccountService accountService,
+                                    CategoryService categoryService) {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.JwtTokenProvider = JwtTokenProvider;
         this.applicationUserService = applicationUserService;
         this.redisService = redisService;
         this.accountService = accountService;
+        this.categoryService = categoryService;
     }
 
     /*-------------------------------- SIGNIN -------------------------------------------*/
@@ -116,15 +122,8 @@ public class AuthenticationController {
     /*--------------------------------SIGNUP-------------------------------------------*/
     @PostMapping("/signup/")
 
-    public ResponseEntity<?> signup(@Valid @RequestBody SubscribeToCourseRequest.SignUpRequest signUpRequest) {
+    public ResponseEntity<?> signup(@Valid @RequestBody SignUpRequest signUpRequest) {
         System.out.println("i'm in signup method");
-        System.out.println("request username :" + signUpRequest.getUsername());
-        System.out.println("request email :" + signUpRequest.getEmail());
-        System.out.println("request password :" + signUpRequest.getPassword());
-        System.out.println("request phone :" + signUpRequest.getPhone_number());
-        System.out.println("request account type :" + signUpRequest.getAccountType());
-        System.out.println("request grade  :" + signUpRequest.getGrade());
-        System.out.println("request address  :" + signUpRequest.getAddress());
 
         User application_user_1 = applicationUserService.getUserByUsername(signUpRequest.getUsername().trim());
         User application_user_2 = applicationUserService.getUserByEmail(signUpRequest.getEmail().trim());
@@ -145,15 +144,30 @@ public class AuthenticationController {
 
         if(signUpRequest.getAccountType() == AccountType.TEACHER.getAccountCode()){
             System.out.println("request is teacher");
+            System.out.println("category name is " + signUpRequest.getSubject());
+            System.out.println("facebook link : " + signUpRequest.getFacebook_link());
+            System.out.println("twitter link : " + signUpRequest.getTwitter_link());
+
             TeacherAccount account = new TeacherAccount();
-            account.setSubject(signUpRequest.getSubject());
+            System.out.println("before getting category");
+            Category category = categoryService.getCategoryByName(signUpRequest.getSubject());
+            System.out.println("after getting category");
+            System.out.println("category returned is" + category.getName());
+            //set subject info
+            account.setSubject(category);
+            category.getTeachers().add(account);
+            //set account info
             account.setFacebook_link(signUpRequest.getFacebook_link());
             account.setTwitter_link(signUpRequest.getTwitter_link());
+            //set role
             user.setRole(TEACHER);
             user.setAccount(account);
+            //link to account
             account.setUser(user);
+            //save all info in database
             User result = applicationUserService.createUser(user);
             accountService.saveTeacher(account);
+            categoryService.saveCategory(category);
         }else if(signUpRequest.getAccountType() == AccountType.STUDENT.getAccountCode()){
             System.out.println("request is student");
             StudentAccount account = new StudentAccount();

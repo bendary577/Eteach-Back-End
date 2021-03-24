@@ -27,9 +27,14 @@ public class CategoryService {
     }
 
     public Category getCategory(Long id){
-        Category lesson =  this.categoryDAO.findById(id)
+        Category category =  this.categoryDAO.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "id", id));
-        return lesson;
+        return category;
+    }
+
+    public Category getCategoryByName(String name){
+        Category category =  this.categoryDAO.findCategoryByName(name);
+        return category;
     }
 
     public List<Category> getAllCategories(){
