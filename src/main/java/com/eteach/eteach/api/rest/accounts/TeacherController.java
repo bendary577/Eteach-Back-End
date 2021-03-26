@@ -1,10 +1,17 @@
 package com.eteach.eteach.api.rest.accounts;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.http.response.dataResponse.course.CoursesResponse;
+import com.eteach.eteach.http.response.dataResponse.string.StringsResponse;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.course.Category;
+import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.service.AccountService;
+import com.eteach.eteach.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
@@ -15,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,10 +30,13 @@ import java.util.List;
 public class TeacherController {
 
     private final AccountService accountService;
+    private final CategoryService categoryService;
 
     @Autowired
-    public TeacherController(AccountService accountService){
+    public TeacherController(AccountService accountService,
+                             CategoryService categoryService){
         this.accountService = accountService;
+        this.categoryService = categoryService;
     }
 
     //------------------------- CREATE A NEW TEACHER -------------------------------------
@@ -96,4 +107,34 @@ public class TeacherController {
         return ResponseEntity.ok().build();
     }
 
+    //------------------------- GET ALL TEACHER COURSES -------------------------------------
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
+    @GetMapping("/{id}/courses/")
+    public ResponseEntity<?> getTeacherCourses(@PathVariable(value = "id") Long id) {
+        TeacherAccount teacherAccount = accountService.getTeacher(id);
+        if(teacherAccount == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher is not found"));
+        }
+        List<Course> courses = teacherAccount.getCourses();
+        if(courses == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher " + teacherAccount.getUser().getUsername() + " has no courses"));
+        }
+        return ResponseEntity.ok(new CoursesResponse(HttpStatus.OK, "courses returned successfully", courses));
+    }
+
+    //------------------------- GET ALL TEACHERS BY CATEGORY -------------------------------------
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
+    @GetMapping("/categories/")
+    public ResponseEntity<?> getTeacherByCategory(@Valid @NotEmpty @RequestBody String categoryName) {
+        Category category = categoryService.getCategoryByName(categoryName);
+        List<TeacherAccount> teacherAccounts = category.getTeachers();
+        List<String> teacherNames = new ArrayList<>();
+        if(teacherAccounts == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "this category has no teachers"));
+        }
+        for(TeacherAccount teacher : teacherAccounts){
+            teacherNames.add(teacher.getUser().getUsername());
+        }
+        return ResponseEntity.ok(new StringsResponse(HttpStatus.OK, "courses returned successfully", teacherNames));
+    }
 }
