@@ -2,7 +2,6 @@ package com.eteach.eteach.http.request;
 
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
@@ -11,22 +10,22 @@ public class AddCourseRequest {
     private String name;
     private String description;
     private float price;
-    private Grade grade;
+    private String grade;
     private List<String> what_yow_will_learn;
-    private LevelOfDifficulty difficulty_level;
-    private Long teacherId;
+    private String difficulty_level;
+    private String teacherName;
     private String category;
 
     public AddCourseRequest(){}
 
-    public AddCourseRequest(String name, String description, float price, Grade grade, List<String> what_yow_will_learn, LevelOfDifficulty difficulty_level, Long teacherId, String category) {
+    public AddCourseRequest(String name, String description, float price, String grade, List<String> what_yow_will_learn, String difficulty_level, String teacherName, String category) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.grade = grade;
         this.what_yow_will_learn = what_yow_will_learn;
         this.difficulty_level = difficulty_level;
-        this.teacherId = teacherId;
+        this.teacherName = teacherName;
         this.category = category;
     }
 
@@ -54,11 +53,11 @@ public class AddCourseRequest {
         this.price = price;
     }
 
-    public Grade getGrade() {
+    public String getGrade() {
         return grade;
     }
 
-    public void setGrade(Grade grade) {
+    public void setGrade(String grade) {
         this.grade = grade;
     }
 
@@ -70,20 +69,20 @@ public class AddCourseRequest {
         this.what_yow_will_learn = what_yow_will_learn;
     }
 
-    public LevelOfDifficulty getDifficulty_level() {
+    public String getDifficulty_level() {
         return difficulty_level;
     }
 
-    public void setDifficulty_level(LevelOfDifficulty difficulty_level) {
+    public void setDifficulty_level(String difficulty_level) {
         this.difficulty_level = difficulty_level;
     }
 
-    public Long getTeacherId() {
-        return teacherId;
+    public String getTeacherName() {
+        return teacherName;
     }
 
-    public void setTeacherId(Long teacherId) {
-        teacherId = teacherId;
+    public void setTeacherName(String teacherName) {
+        teacherName = teacherName;
     }
 
     public String getCategory() {

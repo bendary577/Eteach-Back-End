@@ -54,7 +54,7 @@ public class UserController {
             Account account = currentUser.getAccount();
             //case user is teacher
             if(account instanceof TeacherAccount){
-                TeacherProfileResponse response = prepareTeacherAccount(currentUser.getId(), username, account);
+                TeacherProfileResponse response = prepareTeacherAccount(username, account);
                 return ResponseEntity.ok(response);
             }else if(account instanceof StudentAccount){
                 //case user is student
@@ -102,20 +102,35 @@ public class UserController {
     //--------------------------------- UPDATE ACCOUNT INFO ---------------------------------
 
 
-    //---------------------------------- Helper Functions -----------------------------------
 
-    public TeacherProfileResponse prepareTeacherAccount(Long id, String username, Account account){
+
+
+    //---------------------------------- Helper Functions -----------------------------------
+    //--------------------------------- TEACHER PROFILE INFO ------------------------------------
+    public TeacherProfileResponse prepareTeacherAccount(String username, Account account){
+        Long id = account.getId();
         String accountType = "Teacher";
         String about = account.getAbout_description();
-        String imagePath = account.getImagePath();
+        String imagePath = "";
+        Image image = account.getImage();
+        if(image != null){
+            imagePath = new StringBuilder(account.getImage().getPath())
+                    .append(File.separator)
+                    .append(image.getName()).toString();
+        }
         Category subject = ((TeacherAccount) account).getSubject();
-        String facebook_link = ((TeacherAccount) account).getFacebook_link();
-        String twitter_link = ((TeacherAccount) account).getTwitter_link();
+        String facebook_link = "";
+        String twitter_link = "" ;
+
+        if(((TeacherAccount) account).getFacebook_link() != null) facebook_link = ((TeacherAccount) account).getFacebook_link();
+        if(((TeacherAccount) account).getTwitter_link() != null) twitter_link = ((TeacherAccount) account).getTwitter_link();
+
         return new TeacherProfileResponse(HttpStatus.OK, "teacher account returned successfully",id, username,
                 about, imagePath, accountType,facebook_link,
                 twitter_link, subject);
     }
 
+    //--------------------------------- STUDENT PROFILE INFO ------------------------------------
     public StudentProfileResponse prepareStudentProfile(Long id, String username, Account account){
         String accountType = "Student";
         String imagePath = "";
@@ -126,15 +141,13 @@ public class UserController {
             .append(File.separator)
             .append(image.getName()).toString();
         }
-        System.out.println("image full path is : " + imagePath);
+
         Grade grade = ((StudentAccount) account).getGrade();
-        System.out.println("grade :" + grade);
         String studentGrade = "";
         String address = ((StudentAccount) account).getAddress();
 
         //--------- handle nulls
         if(grade != null){
-            System.out.println("grade name :" + studentGrade);
             studentGrade = grade.toString();
         }
         if(address == null) address = "";
@@ -144,10 +157,13 @@ public class UserController {
         return new StudentProfileResponse(HttpStatus.OK, "student account returned successfully", id, username,
                 about, imagePath, accountType,studentGrade, address);
     }
+
+    //--------------------------------- ADMIN PROFILE INFO ------------------------------------
     public AdminProfileResponse prepareAdminProfile(Long id, String username, Account account){
         String accountType = "Admin";
         String about = account.getAbout_description();
-        String imagePath = account.getImagePath();
+       // String imagePath = account.getImagePath();
+        String imagePath = "anything";
         return new AdminProfileResponse(HttpStatus.OK, "student account returned successfully",id, username,
                 about, imagePath, accountType);
     }

@@ -2,6 +2,7 @@ package com.eteach.eteach.model.account;
 
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
@@ -14,6 +15,7 @@ import java.util.List;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("teacher_account")
+@JsonIgnoreProperties({ "courses" , "subject"})
 public class TeacherAccount extends Account implements Serializable {
 
     @Column
@@ -24,11 +26,12 @@ public class TeacherAccount extends Account implements Serializable {
 
     @OneToMany(mappedBy="teacher_account",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("courses")
     private List<Course> courses;
 
-    @JsonIgnoreProperties("subject")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", referencedColumnName = "id")
+    @JsonProperty("subject")
     private Category subject;
 
     public TeacherAccount() { }
@@ -39,7 +42,6 @@ public class TeacherAccount extends Account implements Serializable {
         this.subject = subject;
         this.facebook_link = facebook_link;
         this.twitter_link = twitter_link;
-
     }
 
     public List<Course> getCourses() {
@@ -81,6 +83,5 @@ public class TeacherAccount extends Account implements Serializable {
     public void setTwitter_link(String twitter_link) {
         this.twitter_link = twitter_link;
     }
-
 
 }

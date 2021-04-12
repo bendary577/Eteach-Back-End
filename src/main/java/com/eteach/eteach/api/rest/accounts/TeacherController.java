@@ -1,6 +1,7 @@
 package com.eteach.eteach.api.rest.accounts;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.request.GetTeachersByCategoryRequest;
 import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.http.response.dataResponse.course.CoursesResponse;
 import com.eteach.eteach.http.response.dataResponse.string.StringsResponse;
@@ -111,12 +112,16 @@ public class TeacherController {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
     @GetMapping("/{id}/courses/")
     public ResponseEntity<?> getTeacherCourses(@PathVariable(value = "id") Long id) {
+
+        System.out.println("teacher id is : " + id);
         TeacherAccount teacherAccount = accountService.getTeacher(id);
+        System.out.println("teacher name is " + teacherAccount.getUser().getUsername());
+
         if(teacherAccount == null){
             return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher is not found"));
         }
         List<Course> courses = teacherAccount.getCourses();
-        if(courses == null){
+        if(courses.size() == 0){
             return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher " + teacherAccount.getUser().getUsername() + " has no courses"));
         }
         return ResponseEntity.ok(new CoursesResponse(HttpStatus.OK, "courses returned successfully", courses));
@@ -124,9 +129,12 @@ public class TeacherController {
 
     //------------------------- GET ALL TEACHERS BY CATEGORY -------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
-    @GetMapping("/categories/")
-    public ResponseEntity<?> getTeacherByCategory(@Valid @NotEmpty @RequestBody String categoryName) {
-        Category category = categoryService.getCategoryByName(categoryName);
+    @PostMapping("/categories/")
+    public ResponseEntity<?> getTeachersByCategory(@Valid @NotEmpty @RequestBody GetTeachersByCategoryRequest categoryName) {
+        Category category = categoryService.getCategoryByName(categoryName.getCategoryName());
+        if(category == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error in loading category data"));
+        }
         List<TeacherAccount> teacherAccounts = category.getTeachers();
         List<String> teacherNames = new ArrayList<>();
         if(teacherAccounts == null){
@@ -135,6 +143,6 @@ public class TeacherController {
         for(TeacherAccount teacher : teacherAccounts){
             teacherNames.add(teacher.getUser().getUsername());
         }
-        return ResponseEntity.ok(new StringsResponse(HttpStatus.OK, "courses returned successfully", teacherNames));
+        return ResponseEntity.ok(new StringsResponse(HttpStatus.OK, "teacher names returned successfully", teacherNames));
     }
 }

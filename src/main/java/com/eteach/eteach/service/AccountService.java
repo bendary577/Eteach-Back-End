@@ -4,6 +4,7 @@ import com.eteach.eteach.dao.AccountDAO;
 import com.eteach.eteach.dao.StudentDAO;
 import com.eteach.eteach.dao.TeacherDAO;
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.model.account.Account;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.course.Course;
@@ -76,6 +77,7 @@ public class AccountService {
         return teacherAccount;
     }
 
+
     public List<TeacherAccount> getAllTeachers(Integer pageNo, Integer pageSize){
         Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by("id"));
         Page<TeacherAccount> pagedResult = (Page<TeacherAccount>) this.teacherDAO.findAll(paging);
@@ -89,5 +91,9 @@ public class AccountService {
     public void deleteTeacher(TeacherAccount teacherAccount){
         this.teacherDAO.delete(teacherAccount);
     }
-
+//---------------------------------------------------------------------------------------
+    public Account getAccountById(Long id) throws Throwable {
+        return (Account) this.accountDAO.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException("TeacherAccount", "id", id));
+    }
 }

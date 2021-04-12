@@ -33,7 +33,7 @@ public class CategoryService {
     }
 
     public Category getCategoryByName(String name){
-        Category category =  this.categoryDAO.findCategoryByName(name);
+        Category category = this.categoryDAO.findCategoryByName(name);
         return category;
     }
 

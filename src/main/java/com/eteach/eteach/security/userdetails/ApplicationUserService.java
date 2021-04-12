@@ -43,7 +43,6 @@ public class ApplicationUserService implements UserDetailsService {
     /*-------------------------------------- GET USER BY USERNAME -----------------------------------------*/
     @Transactional
     public User getUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("in get by username");
         Optional<User> user = applicationUserDao.findUserByUsername(username);
         return user.orElse(null);
     }

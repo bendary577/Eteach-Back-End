@@ -10,6 +10,7 @@ import com.eteach.eteach.http.response.authResponse.JwtAuthenticationResponse;
 import com.eteach.eteach.http.request.LoginRequest;
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.redis.RedisService;
+import com.eteach.eteach.security.rolesandpermessions.Role;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import com.eteach.eteach.service.AccountService;
@@ -78,7 +79,18 @@ public class AuthenticationController {
             //GENERATE A NEW AUTH TOKEN FOR THE NEW USER
             String jwtToken = JwtTokenProvider.generateToken(authentication);
 
-            return ResponseEntity.ok(new JwtAuthenticationResponse(applicationUser.getUser().getId(),jwtToken, applicationUser.getUsername(), applicationUser.getAuthorities(), HttpStatus.OK, "logged in successfully "));
+            String accountType;
+            if(applicationUser.getUser().getRole() == TEACHER){
+                accountType = "teacher";
+            }else if(applicationUser.getUser().getRole() == STUDENT){
+                accountType = "student";
+            }else if(applicationUser.getUser().getRole() == ADMIN){
+                accountType = "admin";
+            }else{
+                accountType = "admin trainee";
+            }
+
+            return ResponseEntity.ok(new JwtAuthenticationResponse(applicationUser.getUser().getAccount().getId(),jwtToken, applicationUser.getUsername(), accountType, applicationUser.getAuthorities(), HttpStatus.OK, "logged in successfully "));
         }else{
             return ResponseEntity.ok(new ApiResponse(HttpStatus.UNAUTHORIZED, "username or password are invalid"));
         }
@@ -227,9 +239,19 @@ public class AuthenticationController {
 
     @GetMapping("/refreshtoken")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) throws Exception {
-        ApplicationUser user = (ApplicationUser) request.getAttribute("user");
-        String refreshedToken = JwtTokenProvider.generateRefreshToken(user);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(user.getUser().getId(), refreshedToken, user.getUsername(), user.getAuthorities(), HttpStatus.OK, "token refreshed successfully"));
+        ApplicationUser applicationUser = (ApplicationUser) request.getAttribute("user");
+        String refreshedToken = JwtTokenProvider.generateRefreshToken(applicationUser);
+        String accountType;
+        if(applicationUser.getUser().getRole() == TEACHER){
+            accountType = "teacher";
+        }else if(applicationUser.getUser().getRole() == STUDENT){
+            accountType = "student";
+        }else if(applicationUser.getUser().getRole() == ADMIN){
+            accountType = "admin";
+        }else{
+            accountType = "admin trainee";
+        }
+        return ResponseEntity.ok(new JwtAuthenticationResponse(applicationUser.getUser().getId(), refreshedToken, applicationUser.getUsername(),accountType, applicationUser.getAuthorities(), HttpStatus.OK, "token refreshed successfully"));
     }
 
 

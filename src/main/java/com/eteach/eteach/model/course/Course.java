@@ -24,16 +24,14 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Entity
 @Table(name="courses")
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt", "tags", "quizzes", "students", "sections", "ratings"},
+                      allowGetters = true)
 public class Course implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -56,8 +54,9 @@ public class Course implements Serializable {
     private Grade grade;
 
     @NotBlank
-    @Column(nullable = false, length = 50)
-    private String what_yow_will_learn;
+    @Column(nullable = false)
+    @ElementCollection
+    private List<String> what_yow_will_learn = new ArrayList<>();
 
     @Column
     private int students_number;
@@ -83,41 +82,37 @@ public class Course implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("category")
     private Category category;
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JsonIgnoreProperties("sections")
+    @JsonProperty("sections")
     private List<Section> sections;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "trailer_video_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("trailer_video")
     private Video trailer_video;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "thumbnail_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("thumbnail")
     private Image thumbnail;
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JsonIgnoreProperties("ratings")
+    @JsonProperty("ratings")
     private List<CourseRating> ratings;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("teacher_account")
     private TeacherAccount teacher_account;
 
     @ManyToMany(mappedBy = "courses")
-    @JsonIgnoreProperties("courses")
+    @JsonProperty("students")
     private Set<StudentAccount> students = new HashSet<>();
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JsonIgnoreProperties("quizzes")
+    @JsonProperty("quizzes")
     private List<Quiz> quizzes;
 
     @ManyToMany(cascade = { CascadeType.ALL })
@@ -126,23 +121,25 @@ public class Course implements Serializable {
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "tag_id") }
     )
-    @JsonIgnoreProperties("tags")
+    @JsonProperty("tags")
     Set<Tag> tags = new HashSet<>();
 
+   /*
     private transient UserDataConfig userDataConfig = null;
-
-    public Course() { }
 
     @Autowired
     public Course(UserDataConfig userDataConfig) {
         this.userDataConfig = userDataConfig;
     }
+    */
 
+    public Course() {
+    }
     public Course(@JsonProperty("name") String name,
                   @JsonProperty("description") String description,
                   @JsonProperty("price") float price,
                   @JsonProperty("grade") Grade grade,
-                  @JsonProperty("what_yow_will_learn") String what_yow_will_learn,
+                  @JsonProperty("what_yow_will_learn") List<String> what_yow_will_learn,
                   @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level){
         this.name = name;
         this.description = description;
@@ -233,11 +230,11 @@ public class Course implements Serializable {
         this.ratings = ratings;
     }
 
-    public String getWhat_yow_will_learn() {
+    public List<String> getWhat_yow_will_learn() {
         return what_yow_will_learn;
     }
 
-    public void setWhat_yow_will_learn(String what_yow_will_learn) {
+    public void setWhat_yow_will_learn(List<String> what_yow_will_learn) {
         this.what_yow_will_learn = what_yow_will_learn;
     }
 
@@ -330,6 +327,7 @@ public class Course implements Serializable {
     }
 
     /* ---------------------------- PATHS TO PERSIST DATA IN FILESYSTEM ----------------------------------------*/
+    /*
     @Transient
     @JsonIgnore
     public String getTrailerVideoDirPath() {
@@ -359,7 +357,7 @@ public class Course implements Serializable {
                 .append(java.io.File.separator).toString();
         return path;
     }
-
+    */
 
 
 }

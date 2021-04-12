@@ -12,11 +12,13 @@ public class JwtAuthenticationResponse extends ApiResponse implements Serializab
     private String accessToken;
     private String tokenType = "Bearer";
     private String username;
+    private String accountType;
     private Set<? extends GrantedAuthority> grantedAuthorities;
 
     public JwtAuthenticationResponse(Long id,
                                      String accessToken,
                                      String username,
+                                     String accountType,
                                      Set<? extends GrantedAuthority> grantedAuthorities,
                                      HttpStatus status,
                                      String message) {
@@ -24,6 +26,7 @@ public class JwtAuthenticationResponse extends ApiResponse implements Serializab
         this.id = id;
         this.accessToken = accessToken;
         this.username = username;
+        this.accountType = accountType;
         this.grantedAuthorities = grantedAuthorities;
     }
 
@@ -65,5 +68,13 @@ public class JwtAuthenticationResponse extends ApiResponse implements Serializab
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 }

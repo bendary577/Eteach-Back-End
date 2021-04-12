@@ -1,14 +1,19 @@
 package com.eteach.eteach.api.rest.course;
+import com.eteach.eteach.enums.Grade;
+import com.eteach.eteach.enums.LevelOfDifficulty;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.http.request.AddCourseRequest;
 import com.eteach.eteach.http.request.SubscribeToCourseRequest;
 import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.model.account.Account;
 import com.eteach.eteach.model.account.TeacherAccount;
+import com.eteach.eteach.model.account.User;
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.file.Video;
+import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import com.eteach.eteach.service.AccountService;
 import com.eteach.eteach.service.CategoryService;
 import com.eteach.eteach.service.CourseService;
@@ -36,42 +41,79 @@ public class CourseController {
     private final FileService fileService;
     private final AccountService accountService;
     private final CategoryService categoryService;
+    private final ApplicationUserService applicationUserService;
 
     @Autowired
     public CourseController(CourseService courseService,
                             FileService fileService,
                             AccountService accountService,
-                            CategoryService categoryService) {
+                            CategoryService categoryService,
+                            ApplicationUserService applicationUserService) {
         this.courseService = courseService;
         this.fileService = fileService;
         this.accountService = accountService;
         this.categoryService = categoryService;
+        this.applicationUserService = applicationUserService;
     }
 
     /*------------------------------------ CREATE A NEW COURSE ---------------------------------------------- */
-    @PreAuthorize("hasAnyRole('ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping("/")
     public ResponseEntity<?> postCourse(@Valid @RequestBody AddCourseRequest addCourseRequest) {
+        //print info
+        System.out.println("course name :" + addCourseRequest.getName());
+        System.out.println("course description :" + addCourseRequest.getDescription());
+        System.out.println("course price :" + addCourseRequest.getPrice());
+        System.out.println("course grade :" + addCourseRequest.getGrade());
+        for(String learn_sentence : addCourseRequest.getWhat_yow_will_learn()){
+            System.out.println("course learn :" + learn_sentence);
+        }
+        System.out.println("course difficulty :" + addCourseRequest.getDifficulty_level());
+        System.out.println("course teacher :" + addCourseRequest.getTeacherName());
+        System.out.println("course category :" + addCourseRequest.getCategory());
+
         //SET COURSE INFO
         Course course = new Course();
         course.setName(addCourseRequest.getName());
         course.setDescription(addCourseRequest.getDescription());
         course.setPrice(addCourseRequest.getPrice());
-        course.setGrade(addCourseRequest.getGrade());
-        //course.setWhat_yow_will_learn(addCourseRequest.getWhat_yow_will_learn());
-        course.setDifficulty_level(addCourseRequest.getDifficulty_level());
+
+        for(Grade grade : Grade.values()){
+            if(addCourseRequest.getGrade().equals(grade.toString())){
+                System.out.println("grade is : " + grade.toString());
+                course.setGrade(grade);
+            }
+        }
+
+        for(String learn_sentence : addCourseRequest.getWhat_yow_will_learn()){
+            System.out.println("in learn sentence : " + learn_sentence);
+            course.getWhat_yow_will_learn().add(learn_sentence);
+        }
+
+        for(LevelOfDifficulty difficulty : LevelOfDifficulty.values()){
+            if(addCourseRequest.getDifficulty_level().equals(difficulty.toString())){
+                System.out.println("difficulty is : " + difficulty.toString());
+                course.setDifficulty_level(difficulty);
+            }
+        }
+
         //ASSIGN TO TEACHER
-        TeacherAccount teacher = accountService.getTeacher(addCourseRequest.getTeacherId());
+        User user = applicationUserService.getUserByUsername(addCourseRequest.getTeacherName());
+        Account account = user.getAccount();
+        TeacherAccount teacher = (TeacherAccount) account;
         course.setTeacher(teacher);
         teacher.getCourses().add(course);
+
         //ASSIGN TO CATEGORY
         Category category = categoryService.getCategoryByName(addCourseRequest.getCategory());
         category.getCourses().add(course);
         course.setCategory(category);
+
         //SAVE INFO IN DATABASE
         this.courseService.saveCourse(course);
         this.accountService.saveTeacher(teacher);
         this.categoryService.saveCategory(category);
+
         //RETURN API RESPONSE
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course saved successfully by :" + teacher.getUser().getUsername()));
     }
@@ -93,9 +135,12 @@ public class CourseController {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "trailer video is not valid"));
         }
 
+       /*
         Path path = Paths.get(course.getTrailerVideoDirPath());
+        Path path = "asdasdasd";
         Video trailer_video = fileService.createVideoFile(video, path);
         course.setTrailer_video(trailer_video);
+        */
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "trailer video uploaded successfully"));
     }
 
@@ -115,11 +160,13 @@ public class CourseController {
         if (!fileService.validateVideoFile(contentType, size)) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "thumbnail is not valid"));
         }
+        /*
         Path path = Paths.get(course.getThumbnailDirPath());
         Image image = fileService.createImageFile(thumbnail, path);
         course.setThumbnail(image);
         image.setCourse(course);
         courseService.saveCourse(course);
+        */
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course thumbnail uploaded successfully"));
     }
 

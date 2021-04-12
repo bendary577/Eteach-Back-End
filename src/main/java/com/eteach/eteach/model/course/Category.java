@@ -2,6 +2,7 @@ package com.eteach.eteach.model.course;
 
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.manyToManyRelations.CourseRating;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
@@ -15,6 +16,7 @@ import java.util.List;
 @Entity
 @Table(name="categories")
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties({ "courses", "teachers" })
 public class Category implements Serializable {
 
     @Id
@@ -30,14 +32,16 @@ public class Category implements Serializable {
     @Column(nullable = false, length = 100)
     private String description;
 
-    @JsonIgnoreProperties("courses")
+
     @OneToMany(mappedBy="category",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("courses")
     private List<Course> courses;
 
-    @JsonIgnoreProperties("teachers")
+
     @OneToMany(mappedBy="subject",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("teachers")
     private List<TeacherAccount> teachers;
 
     public Category() { }

@@ -37,12 +37,14 @@ public abstract class Account {
     @Fetch(value = FetchMode.SUBSELECT)
     protected List<Notification> notifications;
 
+    /*
     private transient UserDataConfig userDataConfig = null;
 
     @Autowired
     public Account(UserDataConfig userDataConfig) {
         this.userDataConfig = userDataConfig;
     }
+     */
 
     public Account(){}
 
@@ -87,6 +89,7 @@ public abstract class Account {
         this.image = image;
     }
 
+    /*
     @Transient
     public String getImagePath() {
         String path = new StringBuilder(userDataConfig.getAccountsDirectory())
@@ -98,4 +101,6 @@ public abstract class Account {
         System.out.println("account image path is " + path );
         return path;
     }
+    */
+
 }
