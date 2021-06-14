@@ -16,12 +16,12 @@ public class TeacherProfileResponse extends UserProfileResponse{
                                   Long id,
                                   String username,
                                   String about,
-                                  String imagePath,
+                                  byte[] image,
                                   String accountType,
                                   String facebook_link,
                                   String twitter_link,
                                   Category subject){
-        super(status, message,id, username, about, imagePath, accountType);
+        super(status, message,id, username, about, image, accountType);
         this.facebook_link = facebook_link;
         this.twitter_link = twitter_link;
         this.subject = subject;

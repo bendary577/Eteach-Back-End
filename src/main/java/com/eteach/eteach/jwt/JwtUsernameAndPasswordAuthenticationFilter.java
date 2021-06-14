@@ -1,7 +1,7 @@
 package com.eteach.eteach.jwt;
 
 import com.eteach.eteach.config.security.JwtConfig;
-import com.eteach.eteach.http.request.UsernameAndPasswordAuthenticationRequest;
+import com.eteach.eteach.http.request.authRequest.UsernameAndPasswordAuthenticationRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

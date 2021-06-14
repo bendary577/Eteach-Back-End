@@ -12,12 +12,9 @@ public class AdminProfileResponse extends UserProfileResponse{
                                   Long id,
                                   String username,
                                   String about,
-                                  String imagePath,
+                                  byte[] imagePath,
                                   String accountType){
         super(status, message, id, username, about, imagePath, accountType);
     }
-
-
-
 
 }

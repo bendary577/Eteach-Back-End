@@ -1,7 +1,7 @@
 package com.eteach.eteach.security.userdetails;
 
 import com.eteach.eteach.exception.UpdatePasswordException;
-import com.eteach.eteach.http.request.UpdatePasswordRequest;
+import com.eteach.eteach.http.request.authRequest.UpdatePasswordRequest;
 import com.eteach.eteach.model.account.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

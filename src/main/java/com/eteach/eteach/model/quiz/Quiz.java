@@ -14,6 +14,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import java.util.Set;
 @Entity
 @Table(name="quizzes")
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt", "questions", "students", "course"})
 public class Quiz implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -34,19 +35,19 @@ public class Quiz implements Serializable {
     @Column(nullable = false, length = 100)
     private String title;
 
-    @NotBlank
+    @NotNull
     @Column(nullable = false, length = 100)
     private LevelOfDifficulty difficulty_level;
 
-    @NotBlank
-    @Column(nullable = false, length = 100)
-    private int questions_number;
-
-    @NotBlank
-    @Column(nullable = false, length = 100)
+    @NotNull
+    @Column(nullable = false)
     private int final_grade;
 
-    @Column(nullable = false, length = 100)
+    @NotNull
+    @Column(nullable = false)
+    private int questions_number;
+
+    @Column
     private int applied_students_number;
 
     @Column(nullable = false, updatable = false)
@@ -61,24 +62,30 @@ public class Quiz implements Serializable {
 
     @OneToMany(mappedBy="quiz",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("questions")
     private List<Question> questions;
 
     @OneToMany(mappedBy = "quiz",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("students")
     private Set<StudentQuiz> students = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    @JoinColumn(name = "course_id", referencedColumnName = "id")
+    @JsonProperty("course")
     private Course course;
 
     public Quiz() { }
 
-    public Quiz(@JsonProperty("title")String title, @JsonProperty("difficult_level")LevelOfDifficulty difficulty_level,  @JsonProperty("questions_number")int questions_number,  @JsonProperty("final_grade")int final_grade) {
+    public Quiz(@JsonProperty("title")String title,
+                @JsonProperty("difficult_level")LevelOfDifficulty difficulty_level,
+                @JsonProperty("final_grade")int final_grade,
+                @JsonProperty("questions_number")int questions_number) {
         this.id = id;
         this.title = title;
         this.difficulty_level = difficulty_level;
-        this.questions_number = questions_number;
         this.final_grade = final_grade;
+        this.questions_number = questions_number;
     }
 
     public Long getId() {
@@ -103,14 +110,6 @@ public class Quiz implements Serializable {
 
     public void setDifficulty_level(LevelOfDifficulty difficulty_level) {
         this.difficulty_level = difficulty_level;
-    }
-
-    public int getQuestions_number() {
-        return questions_number;
-    }
-
-    public void setQuestions_number(int questions_number) {
-        this.questions_number = questions_number;
     }
 
     public int getFinal_grade() {
@@ -167,5 +166,13 @@ public class Quiz implements Serializable {
 
     public void setApplied_students_number(int applied_students_number) {
         this.applied_students_number = applied_students_number;
+    }
+
+    public int getQuestions_number() {
+        return questions_number;
+    }
+
+    public void setQuestions_number(int questions_number) {
+        this.questions_number = questions_number;
     }
 }

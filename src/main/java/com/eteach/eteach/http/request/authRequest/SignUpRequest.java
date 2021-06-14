@@ -1,4 +1,4 @@
-package com.eteach.eteach.http.request;
+package com.eteach.eteach.http.request.authRequest;
 
 import com.eteach.eteach.model.course.Category;
 

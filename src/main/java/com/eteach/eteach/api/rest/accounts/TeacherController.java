@@ -1,16 +1,21 @@
 package com.eteach.eteach.api.rest.accounts;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.http.request.GetTeachersByCategoryRequest;
+import com.eteach.eteach.http.request.dataRequest.account.GetTeachersByCategoryRequest;
 import com.eteach.eteach.http.response.ApiResponse;
-import com.eteach.eteach.http.response.dataResponse.course.CoursesResponse;
+import com.eteach.eteach.http.response.dataResponse.course.CourseNamesResponse;
+import com.eteach.eteach.http.response.dataResponse.course.utils.CoursesNames;
 import com.eteach.eteach.http.response.dataResponse.string.StringsResponse;
-import com.eteach.eteach.model.account.StudentAccount;
+import com.eteach.eteach.http.response.dataResponse.teacher.TeachersNamesIdsResponse;
+import com.eteach.eteach.http.response.dataResponse.teacher.TeachersResponse;
+import com.eteach.eteach.http.response.dataResponse.teacher.utils.TeacherNameWithId;
+import com.eteach.eteach.http.response.profileResponse.TeacherProfileResponse;
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.service.AccountService;
 import com.eteach.eteach.service.CategoryService;
+import com.eteach.eteach.utils.FileStorageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,20 +37,15 @@ public class TeacherController {
 
     private final AccountService accountService;
     private final CategoryService categoryService;
+    private final FileStorageUtil fileStorageUtil;
 
     @Autowired
     public TeacherController(AccountService accountService,
-                             CategoryService categoryService){
+                             CategoryService categoryService,
+                             FileStorageUtil fileStorageUtil){
         this.accountService = accountService;
         this.categoryService = categoryService;
-    }
-
-    //------------------------- CREATE A NEW TEACHER -------------------------------------
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
-    @PostMapping("/")
-    public String postTeacher(@Valid @RequestBody TeacherAccount teacherAccount){
-        this.accountService.saveTeacher(teacherAccount);
-        return "saved";
+        this.fileStorageUtil = fileStorageUtil;
     }
 
     //---------------------------- UPLOAD TEACHER IMAGE PROFILE --------------------------------------
@@ -67,23 +67,55 @@ public class TeacherController {
     //------------------------- CREATE ALL TEACHERS WITH PAGINATION -------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
     @GetMapping("/")
-    public List<TeacherAccount> getAllTeachers(@RequestParam(defaultValue = "0") Integer pageNo,
+    public ResponseEntity<?> getAllTeachers(@RequestParam(defaultValue = "0") Integer pageNo,
                                                @RequestParam(defaultValue = "10") Integer pageSize) {
         List<TeacherAccount> teacherAccounts;
         teacherAccounts = accountService.getAllTeachers(pageNo, pageSize);
         if(teacherAccounts == null){
-            throw new ResourceNotFoundException("TeacherAccount", "id", 001);
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NOT_FOUND, "there is no teachers yet"));
         }
-        return teacherAccounts;
+        return ResponseEntity.ok(new TeachersResponse(HttpStatus.OK, "teachers returned successfully", teacherAccounts));
+    }
+    //------------------------- CREATE ALL TEACHERS WITH PAGINATION -------------------------------------
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
+    @GetMapping("/names/")
+    public ResponseEntity<?> getAllTeachersNames(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                 @RequestParam(defaultValue = "10") Integer pageSize) {
+        List<TeacherAccount> teacherAccounts;
+        teacherAccounts = accountService.getAllTeachers(pageNo, pageSize);
+        if(teacherAccounts == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NOT_FOUND, "there is no teachers yet"));
+        }
+        List<TeacherNameWithId> teacherNameWithIds = new ArrayList<>();
+        for(TeacherAccount teacher : teacherAccounts){
+            TeacherNameWithId teacherNameWithId = new TeacherNameWithId();
+            teacherNameWithId.setName(teacher.getUser().getUsername());
+            teacherNameWithId.setId(teacher.getId());
+            teacherNameWithIds.add(teacherNameWithId);
+        }
+        return ResponseEntity.ok(new TeachersNamesIdsResponse(HttpStatus.OK, "teachers returned successfully", teacherNameWithIds));
     }
 
     //------------------------- GET A SINGLE TEACHER -------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE','ROLE_TEACHER','ROLE_STUDENT')")
-    @GetMapping("/{id}")
-    public TeacherAccount getTeacher(@PathVariable(value = "id") Long id) {
-        return accountService.getTeacher(id);
-    }
+    @GetMapping("/{id}/")
+    public ResponseEntity<?> getTeacher(@PathVariable(value = "id") Long id) {
+        TeacherAccount teacherAccount = this.accountService.getTeacher(id);
+        System.out.println("teacher id is " + teacherAccount.getUser().getUsername());
+        if(teacherAccount == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NOT_FOUND, "sorry, error returning desired teacher"));
+        }
+        String about = teacherAccount.getAbout_description()== null ? "" : teacherAccount.getAbout_description();
+        byte[] image = null;
+        try {
+             image = this.fileStorageUtil.readImageFromPath(teacherAccount.getImage());
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
 
+        return ResponseEntity.ok(new TeacherProfileResponse(HttpStatus.OK, "teacher returned successfully", teacherAccount.getId(), teacherAccount.getUser().getUsername(),
+                about, image,"Teacher", teacherAccount.getFacebook_link(), teacherAccount.getTwitter_link(), teacherAccount.getSubject()));
+    }
 
     //------------------------ UPDATE A TEACHER ACCOUNT ----------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE','ROLE_TEACHER')")
@@ -111,20 +143,25 @@ public class TeacherController {
     //------------------------- GET ALL TEACHER COURSES -------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
     @GetMapping("/{id}/courses/")
-    public ResponseEntity<?> getTeacherCourses(@PathVariable(value = "id") Long id) {
-
-        System.out.println("teacher id is : " + id);
+    public ResponseEntity<?> getTeacherCoursesNames(@PathVariable(value = "id") Long id) {
         TeacherAccount teacherAccount = accountService.getTeacher(id);
-        System.out.println("teacher name is " + teacherAccount.getUser().getUsername());
-
         if(teacherAccount == null){
             return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher is not found"));
         }
-        List<Course> courses = teacherAccount.getCourses();
-        if(courses.size() == 0){
+        if(teacherAccount.getCourses().size() == 0){
             return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher " + teacherAccount.getUser().getUsername() + " has no courses"));
         }
-        return ResponseEntity.ok(new CoursesResponse(HttpStatus.OK, "courses returned successfully", courses));
+        CourseNamesResponse courseNamesResponse = new CourseNamesResponse(HttpStatus.OK, "courses names returned successfully");
+        List<CoursesNames> coursesNamesList = new ArrayList<>();
+        for(Course course : teacherAccount.getCourses()){
+            CoursesNames coursesNames = new CoursesNames();
+            coursesNames.setId(course.getId());
+            coursesNames.setName(course.getName());
+            coursesNamesList.add(coursesNames);
+        }
+        courseNamesResponse.setCoursesNamesList(coursesNamesList);
+
+        return ResponseEntity.ok(courseNamesResponse);
     }
 
     //------------------------- GET ALL TEACHERS BY CATEGORY -------------------------------------

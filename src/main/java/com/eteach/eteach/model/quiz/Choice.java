@@ -16,15 +16,14 @@ public class Choice implements Serializable {
     private Long id;
 
     @NotBlank
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String text;
 
-    @NotBlank
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private int number;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "qustion_id", referencedColumnName = "id")
+    @JoinColumn(name = "question_id", referencedColumnName = "id")
     private Question question;
 
     public Choice() { }

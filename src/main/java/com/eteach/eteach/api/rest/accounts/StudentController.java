@@ -1,14 +1,11 @@
 package com.eteach.eteach.api.rest.accounts;
 
-import com.eteach.eteach.config.file.UserDataConfig;
+import com.eteach.eteach.dao.FileDAO;
 import com.eteach.eteach.exception.ResourceNotFoundException;
 import com.eteach.eteach.http.response.ApiResponse;
+import com.eteach.eteach.http.response.dataResponse.student.StudentResponse;
 import com.eteach.eteach.model.account.StudentAccount;
-import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
-import com.eteach.eteach.model.file.File;
 import com.eteach.eteach.model.file.Image;
-import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
-import com.eteach.eteach.model.quiz.Quiz;
 import com.eteach.eteach.service.AccountService;
 import com.eteach.eteach.service.FileService;
 import com.eteach.eteach.service.QuizService;
@@ -17,38 +14,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.servlet.ServletContext;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping(value ="/api/v1/students", produces = "application/json;charset=UTF-8")
 public class StudentController {
 
-    private final QuizService quizService;
     private final AccountService accountService;
     private final FileService fileService;
-    private final ServletContext context;
 
     @Autowired
     public StudentController(AccountService accountService,
-                             QuizService quizService,
-                             FileService fileService,
-                             ServletContext context){
+                             FileService fileService){
         this.accountService = accountService;
-        this.quizService = quizService;
         this.fileService = fileService;
-        this.context = context;
     }
 
     //-------------------------- CREATE A NEW STUDENT ------------------------------------------------
@@ -75,12 +63,9 @@ public class StudentController {
         if (!fileService.validateImageFile(contentType, size)) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "profile image is not valid"));
         }
-        Path path = Paths.get("D:", "projects","E-Teach - Front End","dist","assets", "images", "accounts", studentAccount.getId().toString());
+        Path path = Paths.get(String.valueOf(this.getClass().getResource(File.separator + "resources"+ File.separator + "data" + File.separator + "accounts" + File.separator + studentAccount.getId().toString())));
         String absolutePath = path.toFile().getAbsolutePath();
-        System.out.println("student image path is : " + path);
-            System.out.println("student image absolute path is : " + absolutePath);
         Image image = fileService.createImageFile(profileImage, path);
-        System.out.println("image created successfully");
         studentAccount.setImage(image);
         this.accountService.saveStudent(studentAccount);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "profile image uploaded successfully TO PATH : " + studentAccount.getImage().getPath() + " with name" + studentAccount.getImage().getName() ));
@@ -101,18 +86,18 @@ public class StudentController {
 
     //----------------------------- GET A SINGLE STUDENT ACCOUNT ---------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE','ROLE_TEACHER','ROLE_STUDENT')")
-    @GetMapping("/{id}")
-    public StudentAccount getStudent(@PathVariable(value = "id") Long id) {
+    @GetMapping("/{id}/")
+    public ResponseEntity<?> getStudent(@PathVariable(value = "id") Long id) {
         StudentAccount studentAccount = accountService.getStudent(id);
         if(studentAccount == null){
-            throw new ResourceNotFoundException("StudentAccount", "id", id);
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NOT_FOUND, "sorry, we can't find desired student account"));
         }
-        return studentAccount;
+        return ResponseEntity.ok(new StudentResponse(HttpStatus.OK, "student account returned successfully",studentAccount));
     }
 
     //----------------------------- UPDATE STUDENT INFO -------------------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE', 'ROLE_STUDENT')")
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/")
     public StudentAccount updateStudent(@PathVariable(value = "id") Long id, @Valid @RequestBody StudentAccount newStudentAccount) {
         StudentAccount oldStudentAccount = accountService.getStudent(id);
         if(oldStudentAccount == null){
@@ -123,7 +108,7 @@ public class StudentController {
 
     //----------------------------- DELETE A SINGLE STUDENT ACCOUNT --------------------------------------
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_ADMINTRAINEE')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/")
     public ResponseEntity<?> deleteStudent(@PathVariable(value = "id") Long id) {
         StudentAccount studentAccount = accountService.getStudent(id);
         if(studentAccount == null){
@@ -132,40 +117,6 @@ public class StudentController {
         accountService.deleteStudent(studentAccount);
         return ResponseEntity.ok().build();
     }
-
-    //------------------------------ ASSIGN QUIZ TO STUDENT ------------------------------------------------
-    @PreAuthorize("hasRole('ROLE_STUDENT')")
-    @PostMapping("/{quizId}")
-    public ResponseEntity<?> takeQuiz(@PathVariable(value = "quizId") Long quizId, @Valid @RequestBody Long studentId) {
-        //get the quiz and the student account
-        Quiz quiz = quizService.getQuiz(quizId);
-        StudentAccount studentAccount = accountService.getStudent(studentId);
-
-        //create student_quiz_key
-        StudentQuizKey studentQuizKey = new StudentQuizKey();
-        studentQuizKey.setQuizId(quizId);
-        studentQuizKey.setStudentId(studentId);
-
-        //create student_quiz
-        StudentQuiz studentQuiz = new StudentQuiz();
-        studentQuiz.setId(studentQuizKey);
-        studentQuiz.setStudent(studentAccount);
-        studentQuiz.setQuiz(quiz);
-
-        //assign quiz to student
-        studentAccount.getQuizzes().add(studentQuiz);
-        quiz.getStudents().add(studentQuiz);
-
-        //save info in database
-        accountService.saveStudent(studentAccount);
-        quizService.saveQuiz(quiz);
-
-        return ResponseEntity.ok().build();
-    }
-
-    //--------------- UPLOAD QUIZ ANSWERS : THEN MARK THE QUIZ AND RETURN MARK ---------------------------//
-    //takes quizId, student choices array, then return the student mark
-
 
 
 }

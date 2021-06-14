@@ -1,5 +1,4 @@
 package com.eteach.eteach;
-
 import com.eteach.eteach.config.security.JwtConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -2,15 +2,14 @@ package com.eteach.eteach.api.auth;
 
 import com.eteach.eteach.enums.AccountType;
 import com.eteach.eteach.enums.Grade;
-import com.eteach.eteach.http.request.SignUpRequest;
+import com.eteach.eteach.http.request.authRequest.SignUpRequest;
 import com.eteach.eteach.model.account.*;
 import com.eteach.eteach.jwt.JwtTokenProvider;
 import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.http.response.authResponse.JwtAuthenticationResponse;
-import com.eteach.eteach.http.request.LoginRequest;
+import com.eteach.eteach.http.request.authRequest.LoginRequest;
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.redis.RedisService;
-import com.eteach.eteach.security.rolesandpermessions.Role;
 import com.eteach.eteach.security.userdetails.ApplicationUser;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
 import com.eteach.eteach.service.AccountService;

@@ -1,11 +1,12 @@
-package com.eteach.eteach.http.request;
+package com.eteach.eteach.http.request.dataRequest.course;
 
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class AddCourseRequest {
+public class AddCourseRequest implements Serializable {
 
     private String name;
     private String description;
@@ -82,7 +83,7 @@ public class AddCourseRequest {
     }
 
     public void setTeacherName(String teacherName) {
-        teacherName = teacherName;
+        this.teacherName = teacherName;
     }
 
     public String getCategory() {

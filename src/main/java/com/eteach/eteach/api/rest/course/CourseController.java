@@ -1,23 +1,29 @@
 package com.eteach.eteach.api.rest.course;
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
+import com.eteach.eteach.enums.Rating;
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.http.request.AddCourseRequest;
-import com.eteach.eteach.http.request.SubscribeToCourseRequest;
+import com.eteach.eteach.http.request.dataRequest.course.AddCourseRequest;
+import com.eteach.eteach.http.request.dataRequest.course.GenerateCourseCodeRequest;
+import com.eteach.eteach.http.request.dataRequest.course.RatingCourseRequest;
+import com.eteach.eteach.http.request.dataRequest.course.SubscribeToCourseRequest;
 import com.eteach.eteach.http.response.ApiResponse;
-import com.eteach.eteach.model.account.Account;
+import com.eteach.eteach.http.response.dataResponse.course.*;
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.account.User;
+import com.eteach.eteach.model.compositeKeys.CourseRatingKey;
+import com.eteach.eteach.model.compositeKeys.StudentCourseKey;
 import com.eteach.eteach.model.course.Category;
 import com.eteach.eteach.model.course.Course;
-import com.eteach.eteach.model.file.Image;
+import com.eteach.eteach.model.manyToManyRelations.CourseRequest;
+import com.eteach.eteach.model.course.WhatWillStudentLearn;
 import com.eteach.eteach.model.account.StudentAccount;
+import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.file.Video;
+import com.eteach.eteach.model.manyToManyRelations.CourseRating;
+import com.eteach.eteach.model.manyToManyRelations.StudentCourse;
 import com.eteach.eteach.security.userdetails.ApplicationUserService;
-import com.eteach.eteach.service.AccountService;
-import com.eteach.eteach.service.CategoryService;
-import com.eteach.eteach.service.CourseService;
-import com.eteach.eteach.service.FileService;
+import com.eteach.eteach.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +37,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -42,35 +49,33 @@ public class CourseController {
     private final AccountService accountService;
     private final CategoryService categoryService;
     private final ApplicationUserService applicationUserService;
+    private final WhatWillStudentLearnService whatWillStudentLearnService;
+    private final StudentCourseService studentCourseService;
+    private final CourseRatingService courseRatingService;
 
     @Autowired
     public CourseController(CourseService courseService,
                             FileService fileService,
                             AccountService accountService,
                             CategoryService categoryService,
-                            ApplicationUserService applicationUserService) {
+                            ApplicationUserService applicationUserService,
+                            WhatWillStudentLearnService whatWillStudentLearnService,
+                            StudentCourseService studentCourseService,
+                            CourseRatingService courseRatingService) {
         this.courseService = courseService;
         this.fileService = fileService;
         this.accountService = accountService;
         this.categoryService = categoryService;
         this.applicationUserService = applicationUserService;
+        this.whatWillStudentLearnService = whatWillStudentLearnService;
+        this.studentCourseService = studentCourseService;
+        this.courseRatingService = courseRatingService;
     }
 
     /*------------------------------------ CREATE A NEW COURSE ---------------------------------------------- */
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @PostMapping("/")
     public ResponseEntity<?> postCourse(@Valid @RequestBody AddCourseRequest addCourseRequest) {
-        //print info
-        System.out.println("course name :" + addCourseRequest.getName());
-        System.out.println("course description :" + addCourseRequest.getDescription());
-        System.out.println("course price :" + addCourseRequest.getPrice());
-        System.out.println("course grade :" + addCourseRequest.getGrade());
-        for(String learn_sentence : addCourseRequest.getWhat_yow_will_learn()){
-            System.out.println("course learn :" + learn_sentence);
-        }
-        System.out.println("course difficulty :" + addCourseRequest.getDifficulty_level());
-        System.out.println("course teacher :" + addCourseRequest.getTeacherName());
-        System.out.println("course category :" + addCourseRequest.getCategory());
 
         //SET COURSE INFO
         Course course = new Course();
@@ -80,93 +85,100 @@ public class CourseController {
 
         for(Grade grade : Grade.values()){
             if(addCourseRequest.getGrade().equals(grade.toString())){
-                System.out.println("grade is : " + grade.toString());
                 course.setGrade(grade);
             }
         }
 
-        for(String learn_sentence : addCourseRequest.getWhat_yow_will_learn()){
-            System.out.println("in learn sentence : " + learn_sentence);
-            course.getWhat_yow_will_learn().add(learn_sentence);
-        }
-
         for(LevelOfDifficulty difficulty : LevelOfDifficulty.values()){
             if(addCourseRequest.getDifficulty_level().equals(difficulty.toString())){
-                System.out.println("difficulty is : " + difficulty.toString());
                 course.setDifficulty_level(difficulty);
             }
         }
 
         //ASSIGN TO TEACHER
-        User user = applicationUserService.getUserByUsername(addCourseRequest.getTeacherName());
-        Account account = user.getAccount();
-        TeacherAccount teacher = (TeacherAccount) account;
-        course.setTeacher(teacher);
+        User user = this.applicationUserService.getUserByUsername(addCourseRequest.getTeacherName().trim());
+        TeacherAccount teacher = (TeacherAccount) user.getAccount();
+        course.setTeacherAccount(teacher);
         teacher.getCourses().add(course);
 
         //ASSIGN TO CATEGORY
-        Category category = categoryService.getCategoryByName(addCourseRequest.getCategory());
+        Category category = this.categoryService.getCategoryByName(addCourseRequest.getCategory());
         category.getCourses().add(course);
         course.setCategory(category);
 
         //SAVE INFO IN DATABASE
         this.courseService.saveCourse(course);
+        for(String learn_sentence : addCourseRequest.getWhat_yow_will_learn()){
+            System.out.println("learn sentence : " + learn_sentence);
+            WhatWillStudentLearn learn = new WhatWillStudentLearn();
+            learn.setSentence(learn_sentence);
+            learn.setCourse(course);
+            this.whatWillStudentLearnService.saveSentence(learn);
+            course.getWhat_you_will_learn().add(learn);
+        }
+
         this.accountService.saveTeacher(teacher);
         this.categoryService.saveCategory(category);
 
         //RETURN API RESPONSE
-        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course saved successfully by :" + teacher.getUser().getUsername()));
+        return ResponseEntity.ok(new CourseRegisteredResponse(HttpStatus.OK, "course saved successfully by :" + teacher.getUser().getUsername(), course.getId()));
     }
 
     /*------------------------------------ UPLOAD COURSE TRAILER VIDEO ------------------------------------- */
-    @PreAuthorize("hasRole('ROLE_TEACHER')")
-    @PostMapping(value = "/upload/{id}/video/", consumes = {
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ADMIN_TRAINEE')")
+    @PostMapping(value = "/upload/{id}/video", consumes = {
             MediaType.MULTIPART_FORM_DATA_VALUE,
             MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public ResponseEntity<?> uploadCourseVideo(@PathVariable(value = "id") Long id,
-                                               @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile video) throws IOException {
+                                               @Valid @NotNull @NotEmpty @RequestPart("course_video") MultipartFile video) throws IOException {
         Course course = courseService.getCourse(id);
         if (course == null) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "course not found"));
+        }
+        if(video == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error, we can't process video"));
         }
         String contentType = video.getContentType();
         Long size = video.getSize();
         if (!fileService.validateVideoFile(contentType, size)) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "trailer video is not valid"));
         }
-
-       /*
-        Path path = Paths.get(course.getTrailerVideoDirPath());
-        Path path = "asdasdasd";
-        Video trailer_video = fileService.createVideoFile(video, path);
-        course.setTrailer_video(trailer_video);
-        */
+        Path path = Paths.get("D:", "projects","E-Teach - Front End","dist","assets", "videos", "courses", course.getId().toString());
+        String absolutePath = path.toFile().getAbsolutePath();
+        Video course_video = fileService.createVideoFile(video, path);
+        course.setTrailer_video(course_video);
+        course_video.setCourse(course);
+        this.courseService.saveCourse(course);
+        this.fileService.saveVideo(course_video);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "trailer video uploaded successfully"));
     }
 
     /*------------------------------------ UPLOAD COURSE THUMBNAIL ------------------------------------- */
-    @PreAuthorize("hasRole('ROLE_TEACHER')")
-    @PostMapping(value = "/upload/{id}/thumbnail/", consumes = {
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ADMIN_TRAINEE')")
+    @PostMapping(value = "/upload_thumbnail/{id}/", consumes = {
             MediaType.MULTIPART_FORM_DATA_VALUE,
             MediaType.APPLICATION_OCTET_STREAM_VALUE})
     public ResponseEntity<?> uploadCourseThumbnail(@PathVariable(value = "id") Long id,
-                                                   @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile thumbnail) throws IOException {
+                                                   @RequestPart("course_thumbnail") @Valid @NotNull @NotEmpty MultipartFile thumbnail) throws IOException {
         Course course = courseService.getCourse(id);
-        String contentType = thumbnail.getContentType();
-        Long size = thumbnail.getSize();
         if (course == null) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "course not found"));
         }
-        if (!fileService.validateVideoFile(contentType, size)) {
+        if(thumbnail == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "we have an error, we can't process video"));
+        }
+        String contentType = thumbnail.getContentType();
+        Long size = thumbnail.getSize();
+        if (!fileService.validateImageFile(contentType, size)) {
             return ResponseEntity.ok(new ApiResponse(HttpStatus.BAD_REQUEST, "thumbnail is not valid"));
         }
-        /*
-        Path path = Paths.get(course.getThumbnailDirPath());
+        Path path = Paths.get("D:", "projects","E-Teach - Front End","dist","assets", "images", "courses", course.getId().toString(), "thumbnail");
+        //String absolutePath = path.toFile().getAbsolutePath();
         Image image = fileService.createImageFile(thumbnail, path);
         course.setThumbnail(image);
         image.setCourse(course);
-        courseService.saveCourse(course);
-        */
+        this.courseService.saveCourse(course);
+        this.fileService.saveImage(image);
         return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "course thumbnail uploaded successfully"));
     }
 
@@ -179,44 +191,80 @@ public class CourseController {
         return courseService.getCourses(pageNo, pageSize, sortBy);
     }
 
+    //------------------------- GET ALL SPECIFIC TEACHER COURSES -------------------------------------
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER')")
+    @GetMapping("/teacher/{id}/")
+    public ResponseEntity<?> getTeacherCourses(@PathVariable(value = "id") Long id) {
+        TeacherAccount teacherAccount = accountService.getTeacher(id);
+        if(teacherAccount == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher is not found"));
+        }
+        List<Course> courses = teacherAccount.getCourses();
+        if(courses.size() == 0){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "teacher " + teacherAccount.getUser().getUsername() + " has no courses"));
+        }
+        return ResponseEntity.ok(new CoursesResponse(HttpStatus.OK, "courses returned successfully", courses));
+    }
+
     /*------------------------------------ GET A SINGLE COURSE ----------------------------------------- */
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TEACHER','ROLE_STUDENT')")
     @GetMapping("/{id}")
-    public Course getCourse(@PathVariable(value = "id") Long id) {
-        return courseService.getCourse(id);
+    public ResponseEntity<?> getCourse(@PathVariable(value = "id") Long id) {
+        Course course = courseService.getCourse(id);
+        if(course == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NO_CONTENT, "there is an error returning the course"));
+        }
+        return ResponseEntity.ok(new CourseResponse(HttpStatus.OK, "course returned successfully", course));
     }
-
     /*------------------------------------ RATE A COURSE ------------------------------------- */
     @PreAuthorize("hasRole('ROLE_STUDENT')")
-    @PutMapping("rate/{id}")
-    public void rateCourse(@PathVariable(value = "id") Long id,
-                           @Valid @RequestBody Course newCourse) {
-        System.out.println("rate course");
-    }
+    @PostMapping("/rate/{id}/")
+    public ResponseEntity<?> rateCourse(@PathVariable(value = "id") Long id,
+                           @Valid @RequestBody RatingCourseRequest ratingCourseRequest) {
 
-    /*------------------------------------ SUBSCRIBE TO A COURSE ------------------------------------- */
-    @PreAuthorize("hasRole('ROLE_STUDENT')")
-    @PutMapping("subscribe/{id}")
-    public ResponseEntity<?> subscribeToCourse(@PathVariable(value = "id") Long id,
-                                  @Valid @RequestBody SubscribeToCourseRequest subscribeToCourseRequest) {
-        System.out.println("student id :" + subscribeToCourseRequest.getStudentId());
-        //GET STUDENT
-        Long studentId = subscribeToCourseRequest.getStudentId();
-        StudentAccount student = accountService.getStudent(studentId);
-        String studentUsername = student.getUser().getUsername();
-        //GET COURSE
-        Course course = courseService.getCourse(id);
-        String courseName = course.getName();
-        //ASSIGN STUDENT TO COURSE
-        student.getCourses().add(course);
-        course.getStudents().add(student);
-        //INCREMENT COURSE STUDENT NUMBER
-        course.setStudents_number(course.getStudents_number() + 1);
-        //SAVE INFO IN DATABASE
-        courseService.saveCourse(course);
-        accountService.saveStudent(student);
-        //RETURN API RESPONSE
-        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "student" + studentUsername + "subscribed to course" + courseName + "successfully"));
+        Course courseObject = this.courseService.getCourse(id);
+        if(courseObject == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NOT_FOUND, "we have a problem getting dersired course"));
+        }
+
+        StudentAccount studentAccount = this.accountService.getStudent(ratingCourseRequest.getStudentId());
+        if(studentAccount == null){
+            return ResponseEntity.ok(new ApiResponse(HttpStatus.NOT_FOUND, "we have a problem getting desired student account"));
+        }
+
+        //generate new course rating key
+        CourseRatingKey courseRatingKey = new CourseRatingKey();
+        courseRatingKey.setCourseId(courseObject.getId());
+        courseRatingKey.setStudentId(studentAccount.getId());
+
+        //make new course rating instance
+        CourseRating courseRating = new CourseRating();
+        courseRating.setId(courseRatingKey);
+        courseRating.setCourse(courseObject);
+        courseRating.setStudent(studentAccount);
+        courseRating.setRating(ratingCourseRequest.getRating());
+
+        //increment number of ratings to course
+        courseObject.setRatings_number(courseObject.getRatings_number()+1);
+
+        int ratingSummation = 0;
+        for(CourseRating courseRating1 : courseObject.getRatings()){
+            ratingSummation += courseRating1.getRating();
+        }
+
+        int rating = ratingSummation / courseObject.getRatings_number();
+
+        for(Rating rating1 : Rating.values()){
+            if(rating > rating1.getRatingCode()){
+                courseObject.setRating(rating1);
+                break;
+            }
+        }
+
+        this.courseService.saveCourse(courseObject);
+        this.courseRatingService.saveCourseRating(courseRating);
+
+        return ResponseEntity.ok(new ApiResponse(HttpStatus.OK, "student " + studentAccount.getUser().getUsername() + " have successfully rated this course !"));
     }
 
     /*------------------------------------ UPDATE COURSE INFO ------------------------------------- */
@@ -242,21 +290,6 @@ public class CourseController {
         courseService.deleteCourse(course);
         return ResponseEntity.ok().build();
     }
-
-    /*--------------------------------------- ADD COURSE SECTION --------------------------------------*/
-
-    @PreAuthorize("hasRole('ROLE_TEACHER')")
-    @PostMapping(value = "/{id}/section/")
-    public ResponseEntity<?> addCourseSection(@PathVariable(value = "id") Long courseId,
-                                                   @PathVariable(value = "type") String type,
-                                                   @RequestPart("content") @Valid @NotNull @NotEmpty MultipartFile thumbnail) throws IOException {
-
-        return ResponseEntity.ok().build();
-    }
-
-    /*--------------------------------- ADD COURSE LESSON TO SECTION -----------------------------*/
-
-
 
     /*------------------------------ RETURN COURSE WITH ALL SECTIONS ------------------------------*/
 

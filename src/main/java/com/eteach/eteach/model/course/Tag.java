@@ -1,6 +1,8 @@
 package com.eteach.eteach.model.course;
 
 import com.eteach.eteach.model.course.Course;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -11,6 +13,7 @@ import java.util.Set;
 @Entity
 @Table(name="tags")
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties(value = {"courses"})
 public class Tag {
 
     @Id
@@ -23,6 +26,7 @@ public class Tag {
     private String text;
 
     @ManyToMany(mappedBy = "tags")
+    @JsonProperty("courses")
     private Set<Course> courses = new HashSet<>();
 
     public Tag(){}

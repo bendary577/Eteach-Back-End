@@ -3,14 +3,13 @@ import com.eteach.eteach.dao.QuizDAO;
 import com.eteach.eteach.event.newQuiz.QuizAddedEvent;
 import com.eteach.eteach.event.newQuiz.QuizAddedEventPublisher;
 import com.eteach.eteach.exception.ResourceNotFoundException;
-import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.account.TeacherAccount;
-import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.eteach.eteach.model.quiz.Quiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 
@@ -52,10 +51,6 @@ public class QuizService {
         quiz.getStudents().add(studentQuiz);
         return quizDAO.save(quiz);
     }
-    //-------------------------- GET ALL TEACHER QUIZZES -----------------------------------------
-    public List<Quiz> getAllCourseQuizzes(Long courseId){
-        return this.quizDAO.findQuizzesByCourseId(courseId);
-    }
 
     //-------------------------- DELETE A SINGLE QUIZ -----------------------------------------
     public void deleteQuiz(Quiz quiz){
@@ -65,7 +60,7 @@ public class QuizService {
     //-------------------------- PUBLISH QUIZ ADDED EVENT ------------------------------------
     public void publishQuizAddedEvent(Quiz quiz){
         Course course = quiz.getCourse();
-        TeacherAccount teacher = course.getTeacher_account();
+        TeacherAccount teacher = course.getTeacherAccount();
         String teacherName = teacher.getUser().getUsername();
         String courseName = course.getName();
         //PUBLISH EVENT THAT A NEW QUIZ IS ADDED
@@ -73,8 +68,15 @@ public class QuizService {
     }
 
     //------------------------ AUTOMATICALLY MARK THE QUIZ -----------------------------//
-
-
+    public int markQuizAnswers(Quiz quiz, List<Integer> answers){
+       int score = 0;
+       for(int i =0; i<quiz.getQuestions().size(); i++){
+           if (answers.get(i) == quiz.getQuestions().get(i).getRightAnswerNumber()){
+               score++;
+           }
+       }
+        return score;
+    }
 
 
 

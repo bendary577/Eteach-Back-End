@@ -1,8 +1,6 @@
 package com.eteach.eteach.http.response.profileResponse;
 
-import com.eteach.eteach.enums.AccountType;
 import com.eteach.eteach.http.response.ApiResponse;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpStatus;
 
 public class UserProfileResponse extends ApiResponse {
@@ -10,7 +8,7 @@ public class UserProfileResponse extends ApiResponse {
     private Long id;
     private String username;
     private String about;
-    private String imagePath;
+    private byte[] image;
     private String accountType;
 
     public UserProfileResponse(){}
@@ -20,13 +18,13 @@ public class UserProfileResponse extends ApiResponse {
                                Long id,
                                String username,
                                String about,
-                               String imagePath,
+                               byte[] image,
                                String accountType){
         super(status, message);
         this.id = id;
         this.username = username;
         this.about = about;
-        this.imagePath = imagePath;
+        this.image = image;
         this.accountType = accountType;
     }
 
@@ -46,12 +44,12 @@ public class UserProfileResponse extends ApiResponse {
         this.about = about;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public byte[] getImagePath() {
+        return image;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setImagePath(byte[] image) {
+        this.image = image;
     }
 
     public String getAccountType() {

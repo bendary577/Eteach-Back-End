@@ -32,12 +32,10 @@ public class Category implements Serializable {
     @Column(nullable = false, length = 100)
     private String description;
 
-
     @OneToMany(mappedBy="category",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
     @JsonProperty("courses")
     private List<Course> courses;
-
 
     @OneToMany(mappedBy="subject",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)

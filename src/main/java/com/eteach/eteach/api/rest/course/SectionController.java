@@ -1,6 +1,7 @@
 package com.eteach.eteach.api.rest.course;
 
 import com.eteach.eteach.exception.ResourceNotFoundException;
+import com.eteach.eteach.http.request.dataRequest.course.AddSectionRequest;
 import com.eteach.eteach.http.response.ApiResponse;
 import com.eteach.eteach.model.course.Course;
 import com.eteach.eteach.model.course.Section;
@@ -29,10 +30,12 @@ public class SectionController {
     }
 
     //----------------------------- CREATE A NEW SECTION ---------------------------------------------------
-    @PreAuthorize("hasRole('ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_ADMINTRAINEE')")
     @PostMapping("/{courseId}")
-    public ResponseEntity<?> postSection(@PathVariable Long courseId, @Valid @RequestBody Section section){
+    public ResponseEntity<?> postSection(@PathVariable Long courseId, @Valid @RequestBody AddSectionRequest addSectionRequest){
         Course course = courseService.getCourse(courseId);
+        Section section = new Section();
+        section.setTitle(addSectionRequest.getTitle());
         course.getSections().add(section);
         section.setCourse(course);
         this.sectionService.saveSection(section);

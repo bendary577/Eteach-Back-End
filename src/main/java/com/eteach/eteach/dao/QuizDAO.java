@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface QuizDAO extends JpaRepository<Quiz, Long> {
-    List<Quiz> findQuizzesByCourseId(Long courseId);
+
 }

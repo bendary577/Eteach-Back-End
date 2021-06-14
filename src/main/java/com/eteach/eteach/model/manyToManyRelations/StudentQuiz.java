@@ -3,11 +3,15 @@ package com.eteach.eteach.model.manyToManyRelations;
 import com.eteach.eteach.model.account.StudentAccount;
 import com.eteach.eteach.model.compositeKeys.StudentQuizKey;
 import com.eteach.eteach.model.quiz.Quiz;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name="student_quiz")
+@JsonIgnoreProperties(value = {"student", "quiz"})
 public class StudentQuiz {
 
     @EmbeddedId
@@ -16,23 +20,30 @@ public class StudentQuiz {
     @ManyToOne
     @MapsId("studentId")
     @JoinColumn(name = "student_id")
+    @JsonProperty("student")
     StudentAccount student;
 
     @ManyToOne
     @MapsId("quizId")
     @JoinColumn(name = "quiz_id")
+    @JsonProperty("quiz")
     Quiz quiz;
 
     @Column
-    float mark;
+    int score;
+
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    Date submittedOn;
 
     public StudentQuiz(){}
 
-    public StudentQuiz(StudentQuizKey id, StudentAccount student, Quiz quiz, float mark) {
+    public StudentQuiz(StudentQuizKey id, StudentAccount student, Quiz quiz, int score, Date submittedOn) {
         this.id = id;
         this.student = student;
         this.quiz = quiz;
-        this.mark = mark;
+        this.score = score;
+        this.submittedOn = submittedOn;
     }
 
     public StudentQuizKey getId() {
@@ -59,11 +70,19 @@ public class StudentQuiz {
         this.quiz = quiz;
     }
 
-    public float getMark() {
-        return mark;
+    public int getScore() {
+        return score;
     }
 
-    public void setMark(float mark) {
-        this.mark = mark;
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public Date getSubmittedOn() {
+        return submittedOn;
+    }
+
+    public void setSubmittedOn(Date submittedOn) {
+        this.submittedOn = submittedOn;
     }
 }

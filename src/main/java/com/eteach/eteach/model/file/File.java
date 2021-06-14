@@ -15,7 +15,7 @@ public abstract class File {
     @Column(updatable = false, nullable = false)
     protected Long id;
 
-    @Column(length = 50)
+    @Column(columnDefinition = "TEXT")
     private String name;
 
     @Column(length = 50)

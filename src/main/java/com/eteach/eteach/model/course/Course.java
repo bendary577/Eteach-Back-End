@@ -1,22 +1,20 @@
 package com.eteach.eteach.model.course;
 
 
-import com.eteach.eteach.config.file.UserDataConfig;
-import com.eteach.eteach.enums.Rating;
 import com.eteach.eteach.enums.Grade;
 import com.eteach.eteach.enums.LevelOfDifficulty;
-import com.eteach.eteach.model.account.StudentAccount;
+import com.eteach.eteach.enums.Rating;
 import com.eteach.eteach.model.account.TeacherAccount;
 import com.eteach.eteach.model.file.Image;
 import com.eteach.eteach.model.file.Video;
 import com.eteach.eteach.model.manyToManyRelations.CourseRating;
+import com.eteach.eteach.model.manyToManyRelations.CourseRequest;
+import com.eteach.eteach.model.manyToManyRelations.StudentCourse;
 import com.eteach.eteach.model.quiz.Quiz;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -30,7 +28,7 @@ import java.util.*;
 @Entity
 @Table(name="courses")
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(value = {"createdAt", "updatedAt", "tags", "quizzes", "students", "sections", "ratings"},
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt", "tags", "quizzes", "students", "sections", "ratings", "whatWillStudentLearn", "course_request"},
                       allowGetters = true)
 public class Course implements Serializable {
     @Id
@@ -53,11 +51,6 @@ public class Course implements Serializable {
     @Column(nullable = false, length = 50)
     private Grade grade;
 
-    @NotBlank
-    @Column(nullable = false)
-    @ElementCollection
-    private List<String> what_yow_will_learn = new ArrayList<>();
-
     @Column
     private int students_number;
 
@@ -70,6 +63,9 @@ public class Course implements Serializable {
     @Column
     private int ratings_number;
 
+    @Column
+    private Rating rating;
+
     @Column(nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
@@ -80,7 +76,12 @@ public class Course implements Serializable {
     @LastModifiedDate
     private Date updated_at;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("whatWillStudentLearn")
+    private List<WhatWillStudentLearn> what_you_will_learn;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade={CascadeType.ALL})
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
@@ -99,6 +100,11 @@ public class Course implements Serializable {
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("course_request")
+    private List<CourseRequest> courseRequest;
+
+    @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
     @JsonProperty("ratings")
     private List<CourseRating> ratings;
 
@@ -106,9 +112,10 @@ public class Course implements Serializable {
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
     private TeacherAccount teacher_account;
 
-    @ManyToMany(mappedBy = "courses")
+    @OneToMany(mappedBy = "course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
     @JsonProperty("students")
-    private Set<StudentAccount> students = new HashSet<>();
+    private Set<StudentCourse> students = new HashSet<>();
 
     @OneToMany(mappedBy="course",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
@@ -134,18 +141,18 @@ public class Course implements Serializable {
     */
 
     public Course() {
+        this.what_you_will_learn = new ArrayList<>();
     }
+
     public Course(@JsonProperty("name") String name,
                   @JsonProperty("description") String description,
                   @JsonProperty("price") float price,
                   @JsonProperty("grade") Grade grade,
-                  @JsonProperty("what_yow_will_learn") List<String> what_yow_will_learn,
                   @JsonProperty("difficulty_level") LevelOfDifficulty difficulty_level){
         this.name = name;
         this.description = description;
         this.price = price;
         this.grade = grade;
-        this.what_yow_will_learn = what_yow_will_learn;
         this.difficulty_level = difficulty_level;
     }
 
@@ -158,11 +165,11 @@ public class Course implements Serializable {
         this.sections = sections;
     }
 
-    public TeacherAccount getTeacher() {
+    public TeacherAccount getTeacherAccount() {
         return teacher_account;
     }
 
-    public void setTeacher(TeacherAccount teacherAccount) {
+    public void setTeacherAccount(TeacherAccount teacherAccount) {
         this.teacher_account = teacherAccount;
     }
 
@@ -230,12 +237,12 @@ public class Course implements Serializable {
         this.ratings = ratings;
     }
 
-    public List<String> getWhat_yow_will_learn() {
-        return what_yow_will_learn;
+    public List<WhatWillStudentLearn> getWhat_you_will_learn() {
+        return what_you_will_learn;
     }
 
-    public void setWhat_yow_will_learn(List<String> what_yow_will_learn) {
-        this.what_yow_will_learn = what_yow_will_learn;
+    public void setWhat_you_will_learn(List<WhatWillStudentLearn> what_yow_will_learn) {
+        this.what_you_will_learn = what_yow_will_learn;
     }
 
     public int getStudents_number() {
@@ -286,19 +293,11 @@ public class Course implements Serializable {
         this.updated_at = updated_at;
     }
 
-    public TeacherAccount getTeacher_account() {
-        return teacher_account;
-    }
-
-    public void setTeacher_account(TeacherAccount teacher_account) {
-        this.teacher_account = teacher_account;
-    }
-
-    public Set<StudentAccount> getStudents() {
+    public Set<StudentCourse> getStudents() {
         return students;
     }
 
-    public void setStudents(Set<StudentAccount> students) {
+    public void setStudents(Set<StudentCourse> students) {
         this.students = students;
     }
 
@@ -324,6 +323,22 @@ public class Course implements Serializable {
 
     public void setQuizzes(List<Quiz> quizzes) {
         this.quizzes = quizzes;
+    }
+
+    public Rating getRating() {
+        return rating;
+    }
+
+    public void setRating(Rating rating) {
+        this.rating = rating;
+    }
+
+    public List<CourseRequest> getCourseRequest() {
+        return courseRequest;
+    }
+
+    public void setCourseRequest(List<CourseRequest> courseRequest) {
+        this.courseRequest = courseRequest;
     }
 
     /* ---------------------------- PATHS TO PERSIST DATA IN FILESYSTEM ----------------------------------------*/

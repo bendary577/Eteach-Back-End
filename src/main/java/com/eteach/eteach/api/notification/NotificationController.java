@@ -1,6 +1,6 @@
 package com.eteach.eteach.api.notification;
 
-import com.eteach.eteach.http.request.LoginRequest;
+import com.eteach.eteach.http.request.authRequest.LoginRequest;
 import com.eteach.eteach.model.quiz.Quiz;
 import com.eteach.eteach.notification.Notification;
 import com.eteach.eteach.notification.NotificationService;

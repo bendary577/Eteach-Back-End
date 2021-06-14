@@ -1,5 +1,6 @@
 package com.eteach.eteach.model.course;;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Table(name="sections")
 @EntityListeners(AuditingEntityListener.class)
+@JsonIgnoreProperties({"course"})
 public class Section implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -27,10 +29,12 @@ public class Section implements Serializable {
 
     @OneToMany(mappedBy="section",cascade={CascadeType.ALL}, fetch = FetchType.EAGER)
     @Fetch(value = FetchMode.SUBSELECT)
+    //@JsonProperty("lessons")
     private List<Lesson> lessons;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "course_id", referencedColumnName = "id")
+    @JsonProperty("course")
     private Course course;
 
     public Section() { }

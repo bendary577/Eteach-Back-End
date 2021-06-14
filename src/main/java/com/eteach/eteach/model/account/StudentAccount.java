@@ -1,9 +1,9 @@
 package com.eteach.eteach.model.account;
 
-
 import com.eteach.eteach.enums.Grade;
-import com.eteach.eteach.model.course.Course;
+import com.eteach.eteach.model.manyToManyRelations.CourseRequest;
 import com.eteach.eteach.model.manyToManyRelations.CourseRating;
+import com.eteach.eteach.model.manyToManyRelations.StudentCourse;
 import com.eteach.eteach.model.manyToManyRelations.StudentQuiz;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,12 +13,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorValue("student_account")
+@JsonIgnoreProperties({"courses","quizzes","ratings","course_request"})
 public class StudentAccount extends Account implements Serializable {
 
     @Column(length = 100)
@@ -27,24 +29,26 @@ public class StudentAccount extends Account implements Serializable {
     @Column(length = 50)
     private Grade grade;
 
-    @ManyToMany(cascade = { CascadeType.ALL })
-    @JoinTable(
-            name = "student_course",
-            joinColumns = { @JoinColumn(name = "student_id") },
-            inverseJoinColumns = { @JoinColumn(name = "course_id") }
-    )
-    @JsonIgnoreProperties("students")
-    Set<Course> courses = new HashSet<>();
+    @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("courses")
+    Set<StudentCourse> courses = new HashSet<>();
 
     @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JsonIgnoreProperties("quizzes")
+    @JsonProperty("quizzes")
     Set<StudentQuiz> quizzes = new HashSet<>();
 
     @OneToMany(mappedBy = "student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @Fetch(value = FetchMode.SUBSELECT)
-    @JsonIgnoreProperties("ratings")
+    @JsonProperty("ratings")
     Set<CourseRating> ratings = new HashSet<>();
+
+    @OneToMany(mappedBy="student",cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+    @Fetch(value = FetchMode.SUBSELECT)
+    @JsonProperty("course_request")
+    private List<CourseRequest> courseRequest;
+
 
     public StudentAccount() { }
 
@@ -78,11 +82,11 @@ public class StudentAccount extends Account implements Serializable {
         this.grade = grade;
     }
 
-    public Set<Course> getCourses() {
+    public Set<StudentCourse> getCourses() {
         return courses;
     }
 
-    public void setCourses(Set<Course> courses) {
+    public void setCourses(Set<StudentCourse> courses) {
         this.courses = courses;
     }
 
@@ -100,5 +104,13 @@ public class StudentAccount extends Account implements Serializable {
 
     public void setRatings(Set<CourseRating> ratings) {
         this.ratings = ratings;
+    }
+
+    public List<CourseRequest> getCourseRequest() {
+        return courseRequest;
+    }
+
+    public void setCourseRequest(List<CourseRequest> courseRequest) {
+        this.courseRequest = courseRequest;
     }
 }
